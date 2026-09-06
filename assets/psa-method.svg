@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 440" width="1240" height="440" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="46" font-size="13" letter-spacing="3.2" fill="#8b949e">PRINCIPAL SKILL ANALYSIS</text>
+  <text x="40" y="82" font-size="25" font-weight="600" fill="#7d8590">Which skills earn their keep — and which combinations of them</text>
+
+  <!-- 1. problem -->
+  <rect x="40" y="130" width="252" height="170" rx="10" fill="none" stroke="#8b949e" stroke-width="1.4" opacity="0.55"/>
+  <text x="64" y="164" font-size="11.5" letter-spacing="2" fill="#8b949e">THE SPACE</text>
+  <text x="64" y="206" font-size="34" font-weight="600" fill="#4c8bf5">5.5 × 10¹¹</text>
+  <text x="64" y="234" font-size="14" fill="#8b949e">skill subsets in a catalog</text>
+  <text x="64" y="254" font-size="14" fill="#8b949e">of 39 skills</text>
+  <text x="64" y="282" font-size="13" fill="#8b949e" opacity="0.85">One ablation per skill sees 39 of them.</text>
+
+  <line x1="300" y1="215" x2="336" y2="215" stroke="#8b949e" stroke-width="1.4" marker-end="url(#a)"/>
+
+  <!-- 2. screening -->
+  <rect x="344" y="130" width="252" height="170" rx="10" fill="none" stroke="#d9863f" stroke-width="1.4" opacity="0.75"/>
+  <text x="368" y="164" font-size="11.5" letter-spacing="2" fill="#d9863f">SCREENING</text>
+  <text x="368" y="206" font-size="34" font-weight="600" fill="#d9863f">80</text>
+  <text x="368" y="234" font-size="14" fill="#8b949e">runs, Resolution IV</text>
+  <text x="368" y="254" font-size="14" fill="#8b949e">fractional factorial</text>
+  <text x="368" y="282" font-size="13" fill="#8b949e" opacity="0.85">Keeps combination-only skills alive.</text>
+
+  <line x1="604" y1="215" x2="640" y2="215" stroke="#8b949e" stroke-width="1.4" marker-end="url(#a)"/>
+
+  <!-- 3. exact -->
+  <rect x="648" y="130" width="252" height="170" rx="10" fill="none" stroke="#3fa88f" stroke-width="1.4" opacity="0.75"/>
+  <text x="672" y="164" font-size="11.5" letter-spacing="2" fill="#3fa88f">EXACT</text>
+  <text x="672" y="206" font-size="34" font-weight="600" fill="#3fa88f">2ᵏ</text>
+  <text x="672" y="234" font-size="14" fill="#8b949e">every subset of the</text>
+  <text x="672" y="254" font-size="14" fill="#8b949e">survivors, 128 at k=7</text>
+  <text x="672" y="282" font-size="13" fill="#8b949e" opacity="0.85">All interaction orders, exactly.</text>
+
+  <line x1="908" y1="215" x2="944" y2="215" stroke="#8b949e" stroke-width="1.4" marker-end="url(#a)"/>
+
+  <!-- 4. outputs -->
+  <text x="952" y="150" font-size="11.5" letter-spacing="2" fill="#8b949e">WHAT COMES OUT</text>
+  <circle cx="960" cy="180" r="3.4" fill="#4c8bf5"/>
+  <text x="976" y="185" font-size="14.5" fill="#7d8590">φᵢ — what each skill is worth</text>
+  <circle cx="960" cy="214" r="3.4" fill="#d9863f"/>
+  <text x="976" y="219" font-size="14.5" fill="#7d8590">I(i,j) — synergy or redundancy</text>
+  <circle cx="960" cy="248" r="3.4" fill="#3fa88f"/>
+  <text x="976" y="253" font-size="14.5" fill="#7d8590">orthogonal areas of capability</text>
+  <circle cx="960" cy="282" r="3.4" fill="#8b949e"/>
+  <text x="976" y="287" font-size="14.5" fill="#7d8590">the minimal spanning subset</text>
+
+  <line x1="40" y1="346" x2="1200" y2="346" stroke="#8b949e" stroke-width="1" opacity="0.28"/>
+  <text x="40" y="380" font-size="14" fill="#8b949e">Σᵢ φᵢ = v(S) − v(∅)</text>
+  <text x="40" y="404" font-size="13.5" fill="#8b949e" opacity="0.85">The attributions sum to the catalog's total lift by construction, so the ranking is a decomposition — not a normalisation that resembles one.</text>
+</svg>

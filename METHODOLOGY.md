@@ -80,6 +80,29 @@ resolution_iv` assert the two halves of this claim.
 
 ### 3.3 Exact — full factorial over the survivors
 
+**Why `2^k`, and what the `2` is.** The `2` is not "pairs". It is the switch: each skill is either
+loaded or not loaded, two states, so `k` skills give `2 x 2 x ... x 2 = 2^k` distinct
+configurations. And `k` is *not* the size of the harness — `N` is. `k` is what survives screening.
+
+The `2^k` configurations contain every group size at once, in the proportions of a row of
+Pascal's triangle. At `k = 7`:
+
+| configuration size | how many | |
+|---:|---:|---|
+| 0 | 1 | the empty baseline |
+| 1 | 7 | skills alone |
+| 2 | **21** | **pairs** |
+| 3 | 35 | triples |
+| 4 | 35 | quadruples |
+| 5 | 21 | quintuples |
+| 6 | 7 | sextuples |
+| 7 | 1 | the whole surviving catalog |
+| | **128** | `= 2^7` |
+
+Pairs are 21 of 128 — sixteen per cent of the runs. The design is not "pairwise"; pairs are simply
+one of the sizes it covers, and the reason every interaction order is recoverable is that every
+size is present.
+
 Every one of the `2^k` subsets of the `k` retained skills is run. Because the subset space is
 complete, **every interaction of every order is present in the data exactly**, with no model, no
 sampling and no extrapolation. `k` is capped by budget and fixed in the pre-registration before

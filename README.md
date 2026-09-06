@@ -1,6 +1,20 @@
+<div align="center">
+
 # PSA — Principal Skill Analysis
 
-**Which parts of an agent skill collection actually earn their keep, and which are decoration?**
+**Which parts of an agent skill collection actually earn their keep — and which combinations of them?**
+
+[![tests](https://github.com/rasputin28/principal-skill-analysis/actions/workflows/tests.yml/badge.svg)](https://github.com/rasputin28/principal-skill-analysis/actions/workflows/tests.yml)
+[![python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](pyproject.toml)
+[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![status](https://img.shields.io/badge/status-pre--registration%20%C2%B7%20no%20results%20yet-orange)](paper.md)
+
+[**Methodology**](METHODOLOGY.md) · [**Paper**](paper.md) · [**Design document**](docs/superpowers/specs/2026-09-06-psa-design.md) · [**Pre-registration**](preregistration/) · [**Catalog selection**](preregistration/catalog-selection.md)
+
+<img src="assets/psa-method.svg" alt="From 5.5 x 10^11 possible skill subsets, to 80 screening runs, to an exact factorial over the survivors, yielding per-skill attribution, pairwise interaction, orthogonal areas of capability, and the minimal spanning subset." width="100%">
+
+</div>
+
 
 Everyone publishes a harness. Everyone claims it helps. Nobody measures which *parts* of it
 help, whether any part is doing nothing, or whether two authors' collections can be compared at
