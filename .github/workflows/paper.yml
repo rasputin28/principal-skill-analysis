@@ -3,7 +3,7 @@ name: paper
 on:
   push:
     branches: [main]
-    paths: ['paper/**', '.github/workflows/paper.yml']
+    paths: ['paper/**', 'paper.md', 'scripts/build-paper-md.sh', '.github/workflows/paper.yml']
   pull_request:
     paths: ['paper/**']
 
@@ -26,6 +26,17 @@ jobs:
             exit 1
           fi
           echo "no undefined references or citations"
+      - name: Check that paper.md is in sync with the LaTeX
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
+          ./scripts/build-paper-md.sh
+          if ! git diff --quiet -- paper.md; then
+            echo "paper.md is stale. Run scripts/build-paper-md.sh and commit the result."
+            git diff --stat -- paper.md
+            exit 1
+          fi
+          echo "paper.md is in sync"
+
       - uses: actions/upload-artifact@v4
         with:
           name: paper-pdf
