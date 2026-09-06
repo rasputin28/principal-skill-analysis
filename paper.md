@@ -11,29 +11,35 @@ not yet collected.*
 ## Abstract
 
 The practice of extending coding agents with curated collections of natural-language
-instructions—variously called skills, harnesses, or frameworks—has grown faster than the
-methods available to evaluate them. Authors publish collections and report aggregate
-improvements, but the field has no instrument for determining which components of a collection
-earn that improvement, whether some components contribute nothing, or whether two collections
-published by different authors can be compared at all. The question is empirical and is
-currently answered rhetorically. In this work, I propose Principal Skill Analysis (PSA), a
-measurement instrument that treats a skill collection as an input rather than as the object of
-a single study. PSA estimates the marginal contribution of each skill through its Shapley
-value over the space of skill subsets, which guarantees that individual contributions sum
-exactly to the aggregate improvement of the full collection, and it recovers latent axes of
-task demand by decomposing the task-by-configuration outcome matrix, which reveals which
-skills are redundant with one another and which subset spans the space. Because the subset
-space grows as `2^N`, I combine a Resolution IV fractional factorial screening stage with an
-exact Shapley computation over the surviving factors, and I address the dominant source of
-noise—task difficulty—through a task-paired design rather than through additional sampling. I
-further specify the negative and positive controls without which such measurements are not
-attributable: a length-matched placebo skill whose estimated contribution must be
-indistinguishable from zero, and an instrumented record of whether each skill was actually
-invoked rather than merely made available. I hypothesize that a small minority of skills
-accounts for the majority of the measurable gain, that the gap between a skill being available
-and a skill being invoked is large enough to dominate the ranking, and consequently that the
-choice of which skills to load has a far greater effect on reported agent performance than the
-size or provenance of the collection they are drawn from.
+instructions—variously called skills, harnesses, or frameworks—has grown faster than the methods
+available to evaluate them. Authors publish collections and report aggregate improvements, and
+organisations adopt them and pay for the tokens they consume, but the field has no instrument for
+determining which components of a collection earn that improvement, whether some components
+contribute nothing, or whether two collections published by different authors can be compared at
+all. The question is empirical and is currently answered rhetorically, while the cost of the
+answer being wrong is metered per token. In this work, I propose Principal Skill Analysis (PSA), a
+measurement instrument that treats a skill collection as an input rather than as the object of a
+single study, and that reports every attribution against two co-primary outcomes: tasks resolved,
+and tasks resolved per dollar. PSA estimates the marginal contribution of each skill through its
+Shapley value over the space of skill subsets, which guarantees that individual contributions sum
+exactly to the aggregate improvement of the full collection. Because a per-skill number cannot
+say whether one skill is better paired with a second or a third, PSA additionally computes the
+Shapley interaction index for every pair, and decomposes the resulting symmetric interaction
+matrix into orthogonal areas of capability; retaining the best-attributed representative of each
+area yields a minimal spanning subset that reproduces the catalog's coverage at a fraction of its
+context cost. Because the subset space grows as `2^N`, I combine a Resolution IV fractional
+factorial screening stage with an exact computation over the surviving factors, and I address the
+dominant source of noise—task difficulty—through a task-paired design rather than through
+additional sampling. I further specify the negative and positive controls without which such
+measurements are not attributable: a length-matched placebo skill whose estimated contribution
+must be indistinguishable from zero, and an instrumented record of whether each skill was
+actually invoked rather than merely made available. I hypothesize that a small minority of skills
+accounts for the majority of the measurable gain, that skills within a published collection
+substitute for one another more often than they complement one another, that the gap between a
+skill being available and a skill being invoked is large enough to dominate the ranking, and
+consequently that the choice of which skills to load has a far greater effect on reported agent
+performance, and on what that performance costs, than the size or provenance of the collection
+they are drawn from.
 
 ---
 
@@ -68,6 +74,17 @@ The third is comparability. Two collections published by two authors cannot be c
 each other because they were never measured against the same baseline, the same model, or the
 same seeds. Each author reports a number computed under their own conditions, and the numbers
 do not meet.
+
+These three questions are not only academic. An organisation running agents at scale pays for
+every token a loaded skill contributes to a prompt and for every turn it induces, and it pays
+whether or not the skill was ever invoked. Skill catalogs are adopted the way dependencies are
+adopted, by reputation and by star count, but unlike dependencies their cost is metered
+continuously and their benefit has never been measured. The practical form of the attribution
+question is therefore a budgeting question: given a fixed context budget, which skills belong in
+it, and how much of what is currently being paid for is buying nothing. This is why every
+attribution in this work is reported twice, once against tasks resolved and once against tasks
+resolved per dollar, and why the minimal spanning subset of Section 4.4 is treated as a result
+rather than a convenience.
 
 I address all three by treating the skill collection as an input to a measurement instrument
 rather than as the subject of a bespoke study. The instrument accepts a collection identified
