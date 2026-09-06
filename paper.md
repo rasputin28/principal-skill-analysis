@@ -151,7 +151,81 @@ earlier work on introducing deterministic evaluation into retrieval-augmented ge
 2024]. The present work applies the same instinct one level up, to the evaluation of the agent
 scaffolding itself.
 
-## 3. Problem Formulation
+## 3. Problem Formulation and the Logic of the Design
+
+### 3.1 The chain of reasoning, in order
+
+Each choice in this design is forced by the failure of the choice before it. Stating the chain in
+order is the clearest way to show that nothing here is decorative.
+
+**The quantity of interest is the lift**, `v(S) − v(∅)`: how much better an agent does with a
+skill collection loaded than without it. Every author reports some version of this number. The
+question is not whether it exists but how it is produced.
+
+**The obvious way to attribute it fails.** Remove one skill from the full collection and measure
+the loss. This is the ablation, and it cannot distinguish a skill that contributes nothing from a
+skill that contributes only alongside another, because in both cases the remainder of the
+collection compensates for its absence. The two cases imply opposite decisions, so an instrument
+that conflates them is not an instrument.
+
+**Fixing it requires evaluating a skill in many contexts, not one.** If a skill's contribution
+depends on what else is loaded, then its worth is the average of its marginal contributions
+across the coalitions it might join. That is a definition, not yet a method, and many averages
+would satisfy it.
+
+**Requiring the average to be fair fixes it uniquely.** Demand that a skill contributing nothing
+receive exactly zero, that interchangeable skills receive the same, and — the load-bearing
+requirement — that the individual attributions sum exactly to the total lift. Exactly one
+allocation satisfies these, and it is the Shapley value. The last requirement, efficiency, is
+what makes a ranked plot of the attributions a genuine decomposition of the collection's benefit
+rather than a normalisation that resembles one.
+
+**But the Shapley value requires the value function on every subset**, and the number of subsets
+is `2^N`. The `2` here is not a pair: it is a switch, each skill loaded or not loaded, two states
+per skill. At a catalog of 39 skills that is over five hundred billion configurations. The exact
+computation is therefore unavailable and something has to give.
+
+**What gives is coverage, not exactness.** A balanced fractional factorial estimates every
+skill's main effect in a number of runs that grows linearly rather than exponentially in `N`,
+which identifies the skills worth pursuing; the exact computation then runs over those survivors
+alone, where `2^k` is small. Nothing is approximated in the final estimate — the approximation is
+in *which skills reach it*.
+
+**That screen must not discard the very skills the study exists to find.** A Resolution III
+design would: it aliases main effects with two-factor interactions, and a two-factor interaction
+is precisely a skill that works only in company. Resolution IV, bought by folding the design over
+at double the runs, separates them. What remains true under Resolution IV, and is what makes the
+two-stage shortcut sound, is that a skill whose entire value is combinatorial still shifts its own
+marginal mean — in a balanced design its partner is present in half the runs.
+
+**The exact stage then measures every order at once**, because it runs every subset of the
+survivors. At `k = 7` its 128 configurations comprise one empty baseline, 7 single skills, 21
+pairs, 35 triples, 35 quadruples, 21 quintuples, 7 sextuples and the full set. Pairs are one size
+among many; the design is not pairwise.
+
+**A number per skill then throws away what those runs measured.** The Shapley value averages over
+coalitions and discards them, so it cannot say whether one skill is better paired with a second
+or a third. The interaction index keeps the structure and answers it.
+
+**And a number per pair does not scale into a decision.** Thirty-nine skills produce 741 pairwise
+numbers. Because the interaction matrix is symmetric, its eigendecomposition collapses redundancy
+blocks of any size into single orthogonal axes, and keeping the best representative of each yields
+the minimal spanning subset — the form in which the result is actually acted upon.
+
+**All of the above is noise-limited before it is budget-limited**, which is why the comparison is
+blocked on task rather than sampled independently. **And all of it is unattributable without
+calibration**, which is why the placebo and the invocation record precede any quantity of
+interest.
+
+### 3.2 What is executed, and what is computed
+
+The distinction is the most natural thing to misread in this design. A **run** is one agent
+attempt at one task with one configuration loaded, where a configuration is any subset of the
+catalog — empty, a single skill, twenty skills, all of them. Nothing is executed "in pairs".
+Pairs, triples and areas are computed *from* those runs during analysis. A screening run at a
+catalog of 39 skills loads roughly twenty skills at once, by construction of the balanced design.
+
+### 3.3 Notation
 
 Let `S = {s₁, …, s_N}` denote the catalog of skills under test, and let a configuration `C ⊆ S`
 be the subset of skills made available to the agent during a run. Let `T` denote the set of
@@ -458,6 +532,23 @@ them a length-matched placebo and an invocation trace—that make both attributa
 instrument takes the catalog as an input, so that a collection published by any author can be
 measured on the same footing as any other, which is the condition under which the disagreement
 can be resolved rather than repeated.
+
+---
+
+## Author contributions and tooling
+
+The methodology in this document — the choice of estimand, the two-stage design, the resolution
+argument, the controls, and the hypotheses — is the author's. A large language model was used as a
+working instrument throughout: to formalise arguments the author framed, to implement and test the
+estimators, to draft prose against the author's direction, and to argue against the author's
+choices where they were weak. Several corrections to the design originated in that exchange and
+are noted where they occur, among them the reading of the additivity gap in Section 4.4 and the
+distinction between imposed and discovered orthogonality.
+
+Disclosing this is not a formality. A study whose subject is the measurement of language-model
+scaffolding, written with the assistance of a language model, has an obvious reflexive interest,
+and the reader is entitled to weigh it. The author takes full responsibility for the content,
+including every claim the model helped articulate and every error it failed to catch.
 
 ---
 

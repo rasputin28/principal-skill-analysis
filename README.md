@@ -32,20 +32,56 @@ against any other collection on a common baseline.
 
 ---
 
-## Why not just run an ablation?
+## The logic, in order
 
-Because leave-one-out ablation cannot tell a useless skill from a skill that only works in
-company. Remove either one from a full collection and the rest compensates; both read as null.
-The distinction matters, because one is safe to drop and the other is not.
+Every step is forced by the failure of the one before it. Nothing here is decorative.
 
-PSA estimates each skill's **Shapley value** over the space of skill subsets. The averaging over
-coalitions is what recovers combination effects, and the efficiency property guarantees that the
-individual contributions sum *exactly* to the collection's total lift — so the ranked bar chart
-is a real decomposition, not a normalized ranking that resembles one.
+**1. The quantity is the lift**, `v(S) − v(∅)`: how much better the agent does with the collection
+loaded than without. Every author reports a version of this. The question is how it is produced.
+
+**2. Ablation cannot answer that.** Remove one skill and measure the loss, and a skill that
+contributes nothing looks exactly like a skill that contributes only alongside another — in both
+cases the rest of the collection compensates. Those two cases imply opposite decisions.
+
+**3. So a skill must be evaluated in many contexts.** Its worth is the average of its marginal
+contributions across the coalitions it might join.
+
+**4. Requiring that average to be *fair* pins it down uniquely.** A skill contributing nothing
+gets exactly zero; interchangeable skills get the same; and the attributions sum exactly to the
+total lift. One allocation satisfies all three — the **Shapley value**. That last property,
+efficiency, is what makes the ranked chart a real decomposition rather than a normalisation that
+resembles one.
 
 ```
 φᵢ = Σ_{C ⊆ S\{i}}  [ |C|! (N−|C|−1)! / N! ] · [ v(C ∪ {i}) − v(C) ]
 ```
+
+**5. But that needs every subset, and there are `2^N` of them.** The `2` is not a pair — it is a
+switch: each skill loaded or not, two states per skill. At 39 skills that is 5.5 × 10¹¹
+configurations.
+
+**6. So screen first, then compute exactly.** A balanced fractional factorial estimates every
+skill's main effect in runs that grow *linearly* in `N`; the exact computation then runs over the
+survivors, where `2^k` is small. The final estimate is not approximated — what is approximated is
+which skills reach it.
+
+**7. The screen must not kill the skills we are hunting.** Resolution III would: it aliases main
+effects with two-factor interactions, and a two-factor interaction *is* a skill that only works in
+company. Resolution IV, bought by folding the design over, separates them.
+
+**8. The exact stage measures every order at once.** At `k = 7` its 128 configurations are 1 empty
+baseline, 7 singles, **21 pairs**, 35 triples, 35 quadruples, 21 quintuples, 7 sextuples and the
+full set. Pairs are one size among many — the design is not pairwise.
+
+**9. A number per skill throws that away**, so PSA also reports the interaction index. **10. A
+number per pair does not scale** — 39 skills means 741 pairs — so the symmetric interaction matrix
+is decomposed into orthogonal areas, and one representative per area gives the minimal spanning
+subset. **11. All of it is noise-limited before it is budget-limited**, so comparisons are blocked
+on task. **12. And all of it is unattributable without calibration**, so the placebo and the
+invocation record run before anything of interest.
+
+The exact procedure is specified in [METHODOLOGY.md](METHODOLOGY.md); the argument for it is
+[the paper](paper.md).
 
 ## Combinations, not just skills
 
@@ -178,8 +214,36 @@ docs/superpowers/specs/  design document
 
 ## Citing
 
-Suro, J. *Principal Skill Analysis: Attributing Agent Performance to Individual Skills and Their
-Combinations.* Registered Report, Stage 1, 2026.
+The written methodology is the reference for this repository; the code is its implementation.
+
+```bibtex
+@misc{suro2026psa,
+  author = {Suro, Joel},
+  title  = {Principal Skill Analysis: Attributing Agent Performance to
+            Individual Skills and Their Combinations},
+  note   = {Registered Report, Stage 1},
+  year   = {2026},
+  eprint = {XXXX.XXXXX},
+  archivePrefix = {arXiv},
+  url    = {https://arxiv.org/abs/XXXX.XXXXX}
+}
+```
+
+The arXiv identifier is a deliberate placeholder: **this preprint has not been posted yet**, and
+`XXXX.XXXXX` is written out rather than given a plausible-looking number so that no reader or
+citation manager mistakes it for a real record. It is replaced on posting; tracked as `PSA-on5`.
+
+Prior work by the author: *Semantic Tokens in Retrieval Augmented Generation*,
+[arXiv:2412.02563](https://arxiv.org/abs/2412.02563).
+
+## Authorship
+
+The methodology is the work of **Joel Suro**, developed with the support of a large language model
+used as a working instrument — to formalise arguments, implement and test the estimators, draft
+prose, and argue against weak choices. Several corrections to the design came out of that
+exchange. The author takes full responsibility for the content. See *Author contributions and
+tooling* in [`paper.md`](paper.md) for the full disclosure and why a study of this particular
+subject owes the reader one.
 
 ## License
 
