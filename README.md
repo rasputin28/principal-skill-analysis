@@ -33,6 +33,29 @@ is a real decomposition, not a normalized ranking that resembles one.
 φᵢ = Σ_{C ⊆ S\{i}}  [ |C|! (N−|C|−1)! / N! ] · [ v(C ∪ {i}) − v(C) ]
 ```
 
+## Combinations, not just skills
+
+A per-skill number cannot say whether skill 1 is better paired with skill 3 than with skill 2 —
+the Shapley value averages over coalitions and then collapses them. PSA keeps the structure and
+reports it:
+
+```python
+estimate.interaction_index_by_task(values, skills)   # synergy (+) vs redundancy (-), every pair
+estimate.compare_coalitions(values, ["s1","s3"], ["s1","s2"])   # the literal question, with a CI
+estimate.best_coalitions(values, size=3)             # given room for three, which three
+```
+
+Negative interaction is the expected case and the one nobody reports: two skills that do the
+same job, both loaded, spending context to buy what one already bought. Hypothesis H6 says
+published catalogs are subadditive for exactly this reason.
+
+The exact stage runs every subset of the surviving skills, so all of this comes out of the same
+runs at no extra cost. The screening stage deliberately does not identify pairs — Resolution IV
+separates main effects from two-factor interactions but leaves those aliased with each other —
+and it does not need to, because a skill whose entire value is a pairwise interaction still
+shifts the marginal mean in a balanced design and therefore survives to the stage that can
+measure it.
+
 ## How it stays affordable
 
 The subset space is `2^N`. Two stages plus a validation pass:

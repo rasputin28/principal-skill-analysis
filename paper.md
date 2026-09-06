@@ -183,7 +183,40 @@ principal component analysis is unsupervised and therefore cannot on its own est
 skill causes an improvement; it organizes the structure of a set of measurements whose causal
 interpretation is supplied by the randomized design of Section 5, not by the decomposition.
 
-### 4.3 Comparison across catalogs
+### 4.3 Interaction structure: which combinations work
+
+The Shapley value answers what a skill is worth on average. It does not answer the question a
+practitioner actually faces when context is scarce, which is whether skill 1 is better paired
+with skill 3 than with skill 2. That question survives the averaging only if the coalition
+structure is kept rather than collapsed, and the object that keeps it is the Shapley interaction
+index. For a pair `{i, j}` it averages the second-order difference
+
+```
+Delta_ij(C) = v(C + i + j) - v(C + i) - v(C + j) + v(C)
+```
+
+over every context `C`, weighted so that the same fairness axioms that justify the per-skill
+allocation carry over to the pair. A positive index is synergy: the two skills are worth more
+together than the sum of their separate contributions. A negative index is redundancy: they do
+the same job, and loading both spends context to buy what one already bought. Zero means they
+neither help nor hinder each other.
+
+I record this as a first-class result rather than a diagnostic, because it is the quantity that
+distinguishes a catalog from a list. A catalog whose skills are mutually redundant has a total
+lift far below the sum of its parts and can be replaced by a small subset with no loss; a
+catalog whose skills are complementary cannot. Aggregate evaluation cannot tell these apart, and
+neither can a per-skill ranking.
+
+The exact stage of Section 5.2 enumerates every subset of the surviving skills, so every pairwise
+index — and every higher-order one — is computed exactly from the same runs, with no additional
+budget. The screening stage does not identify pairs: a Resolution IV design separates main
+effects from two-factor interactions but leaves two-factor interactions aliased with one another,
+and separating those would require Resolution V at substantially greater cost. What Resolution IV
+does guarantee is that a skill carrying a strong interaction is not discarded before the exact
+stage can measure it, because in a balanced design a skill whose entire value is a pairwise
+interaction still shifts the marginal mean: its partner is present in half of the runs.
+
+### 4.4 Comparison across catalogs
 
 For two catalogs `A` and `B` evaluated with the same base agent, benchmark, model and seeds, the
 comparable quantities are the total lifts `v(S_A) − v(∅)` and `v(S_B) − v(∅)`, the same lifts
@@ -216,7 +249,10 @@ with one other skill is exactly a two-factor interaction, and under Resolution I
 contribution is confounded with a main effect and may be discarded at this stage. Since
 combination effects are the phenomenon this work exists to detect, halving the screening budget
 by aliasing them away would defeat the study. Resolution IV aliases main effects with
-three-factor interactions instead, a risk I accept and record.
+three-factor interactions instead, a risk I accept and record. It also preserves, rather than
+identifies, the two-factor interactions themselves; identification happens in the exact stage,
+where every subset of the survivors is run and every interaction of every order is therefore
+available without additional cost.
 
 ### 5.2 Exact computation
 
@@ -314,13 +350,19 @@ one skill is detectable only in combination.
 effect-among-invoked attributions is substantially below unity, and at least one skill ranked
 highly on invocation ranks low on assignment because it is rarely triggered.
 
+**H6 (subadditivity).** Pairwise interaction indices within a published catalog are
+predominantly negative rather than positive: skills in these collections substitute for one
+another more often than they complement one another, so a catalog's total lift falls short of
+the sum of its parts and a small subset reproduces most of it.
+
 **H5 (composition over provenance).** Between two catalogs matched on total token budget, the
 difference in total lift attributable to *which* skills are included exceeds the difference
 attributable to catalog size or authorship.
 
-H2 and H5 are the hypotheses whose confirmation would most change practice, and both are
-uncomfortable for the field this work is addressed to. I state them in that form deliberately.
-A null result on H1 through H4—no skill distinguishable from zero at achievable
+H2, H5 and H6 are the hypotheses whose confirmation would most change practice, and all three are
+uncomfortable for the field this work is addressed to. H6 in particular contradicts the implicit
+assumption under which these collections are assembled and adopted, which is that adding a skill
+is weakly beneficial. I state them in that form deliberately. A null result on H1 through H6—no skill distinguishable from zero at achievable
 budget—is a publishable outcome and will be reported without reframing.
 
 ## 9. Reproducibility

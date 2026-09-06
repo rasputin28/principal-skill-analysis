@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 
+import numpy as np
+
 from .estimate import Interval, LatentAxes
 
 
@@ -64,6 +66,8 @@ def report_card(
     intervals: Mapping[str, Interval],
     residual: float,
     axes: LatentAxes | None = None,
+    interactions: tuple[Sequence[str], "np.ndarray"] | None = None,
+    best: Sequence[tuple[Sequence[str], float]] | None = None,
     control_notes: Sequence[str] = (),
     controls_ok: bool = True,
 ) -> str:
@@ -97,6 +101,39 @@ def report_card(
         f"Total lift attributed: {total:+.4f}. "
         f"Skills indistinguishable from zero: {null_mass}/{len(intervals)}.",
     ]
+    if interactions is not None:
+        pairs, matrix = interactions
+        n = len(pairs)
+        ranked = sorted(
+            ((matrix[i, j], pairs[i], pairs[j]) for i in range(n) for j in range(i + 1, n)),
+            key=lambda t: -abs(t[0]),
+        )[:10]
+        lines += [
+            "",
+            "## Interaction",
+            "",
+            "Positive is synergy, negative is redundancy: two skills doing the same job, both "
+            "loaded, spending context to buy what one already bought.",
+            "",
+            "| pair | index | reading |",
+            "|---|---|---|",
+        ]
+        for value, a, b in ranked:
+            reading = "synergy" if value > 0 else "redundancy" if value < 0 else "independent"
+            lines.append(f"| `{a}` + `{b}` | {value:+.4f} | {reading} |")
+        upper = [matrix[i, j] for i in range(n) for j in range(i + 1, n)]
+        negative = sum(1 for v in upper if v < 0)
+        lines += [
+            "",
+            f"{negative}/{len(upper)} pairs interact negatively "
+            f"(hypothesis H6 predicts a majority).",
+        ]
+
+    if best is not None:
+        lines += ["", "## Best measured combinations", "", "| skills | mean outcome |", "|---|---|"]
+        for skills, value in best:
+            lines.append(f"| {', '.join(f'`{s}`' for s in skills) or '(none)'} | {value:.4f} |")
+
     if axes is not None:
         lines += ["", "## Latent axes", "", "| axis | variance explained | top skills |", "|---|---|---|"]
         for j, ratio in enumerate(axes.explained_variance_ratio):

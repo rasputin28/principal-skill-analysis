@@ -187,3 +187,24 @@ def test_saboteur_is_written_and_discoverable(tmp_path):
     controls.make_saboteur(tmp_path / "controls")
     cat = catalog_mod.discover(tmp_path / "controls")
     assert cat.ids == [controls.SABOTEUR_ID]
+
+
+def test_report_card_names_redundancy_when_it_finds_it():
+    import numpy as np
+
+    from psa import estimate as est
+
+    intervals = {
+        "planner": est.Interval(0.08, 0.02, 0.14),
+        "tester": est.Interval(0.01, -0.03, 0.05),
+    }
+    matrix = np.array([[0.0, -0.06], [-0.06, 0.0]])
+    text = report_mod.report_card(
+        "src", "abc123", intervals, residual=0.0,
+        interactions=(["planner", "tester"], matrix),
+        best=[(("planner",), 0.61), (("planner", "tester"), 0.60)],
+        control_notes=["negative control passed"],
+    )
+    assert "redundancy" in text
+    assert "1/1 pairs interact negatively" in text
+    assert "Best measured combinations" in text

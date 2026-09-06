@@ -107,3 +107,72 @@ def test_rank_agreement_is_one_for_identical_orderings():
     assert estimate.rank_agreement(a, a) == pytest.approx(1.0)
     flipped = {"p": 0.0, "q": 0.5, "r": 1.0}
     assert estimate.rank_agreement(a, flipped) == pytest.approx(-1.0)
+
+
+def test_interaction_index_recovers_pure_synergy():
+    """v(a)=v(b)=0, v(ab)=1: the pair is worth 1 that neither is worth alone."""
+    players = ["a", "b"]
+    values = _table(lambda c: 1.0 if len(c) == 2 else 0.0, players)
+    interaction = estimate.interaction_index_by_task(values, players).mean(axis=2)
+    assert interaction[0, 1] == pytest.approx(1.0)
+    assert interaction[1, 0] == pytest.approx(1.0)
+    assert interaction[0, 0] == 0.0
+
+
+def test_interaction_index_is_negative_for_substitutes():
+    """Two skills that do the same job: stacking them buys nothing."""
+    players = ["a", "b"]
+    values = _table(lambda c: 1.0 if c else 0.0, players)
+    interaction = estimate.interaction_index_by_task(values, players).mean(axis=2)
+    assert interaction[0, 1] == pytest.approx(-1.0)
+
+
+def test_interaction_index_is_zero_for_an_additive_catalog():
+    players = ["a", "b", "c"]
+    weights = {"a": 0.3, "b": 0.1, "c": -0.2}
+    values = _table(lambda c: sum(weights[p] for p in c), players)
+    interaction = estimate.interaction_index_by_task(values, players).mean(axis=2)
+    assert np.allclose(interaction, 0.0, atol=1e-12)
+
+
+def test_the_literal_question_skill_1_with_3_versus_1_with_2():
+    """Is s1 better paired with s3 than with s2? Answered with an interval."""
+    rng = np.random.default_rng(11)
+    n_tasks = 300
+    players = ["s1", "s2", "s3"]
+    base = {p: 0.0 for p in players}
+    def value(coalition):
+        v = 0.1 * len(coalition)
+        if {"s1", "s3"} <= coalition:
+            v += 0.25          # s1 and s3 are complements
+        if {"s1", "s2"} <= coalition:
+            v -= 0.05          # s1 and s2 get in each other's way
+        return v
+    values = {
+        frozenset(c): value(frozenset(c)) + rng.normal(0, 0.05, n_tasks)
+        for s in range(4)
+        for c in itertools.combinations(players, s)
+    }
+    better = estimate.compare_coalitions(values, ["s1", "s3"], ["s1", "s2"], seed=2)
+    assert better.point > 0
+    assert better.excludes_zero
+
+    interaction = estimate.interaction_index_by_task(values, players).mean(axis=2)
+    assert interaction[0, 2] > 0.2      # s1 x s3 synergy
+    assert interaction[0, 1] < 0        # s1 x s2 redundancy
+
+
+def test_best_coalitions_answers_the_budget_question():
+    players = ["a", "b", "c"]
+    weights = {"a": 0.3, "b": 0.2, "c": 0.05}
+    values = _table(lambda c: sum(weights[p] for p in c), players, n_tasks=3)
+    top_pairs = estimate.best_coalitions(values, size=2, top=3)
+    assert top_pairs[0][0] == ("a", "b")
+    assert len(estimate.best_coalitions(values, size=1)) == 3
+
+
+def test_compare_coalitions_refuses_an_unrun_combination():
+    players = ["a", "b"]
+    values = _table(lambda c: float(len(c)), players)
+    with pytest.raises(KeyError, match="never run"):
+        estimate.compare_coalitions(values, ["a", "b", "z"], ["a"])

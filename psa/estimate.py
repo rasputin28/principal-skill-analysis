@@ -232,3 +232,134 @@ def rank_agreement(a: Mapping[str, float], b: Mapping[str, float]) -> float:
     if len(keys) < 2:
         raise ValueError("need at least two shared skills")
     return float(stats.kendalltau([a[k] for k in keys], [b[k] for k in keys]).statistic)
+
+
+# --------------------------------------------------------------------------
+# Interaction -- which combinations work, not just which skills do
+# --------------------------------------------------------------------------
+
+def _interaction_weights(n: int) -> np.ndarray:
+    """w[c] = c! (n - c - 2)! / (n - 1)! for a coalition of size c."""
+    return np.array(
+        [
+            math.factorial(c) * math.factorial(n - c - 2) / math.factorial(n - 1)
+            for c in range(n - 1)
+        ]
+    )
+
+
+def pairwise_lift(
+    values: Mapping[frozenset, np.ndarray],
+    a: str,
+    b: str,
+    context: frozenset[str] = frozenset(),
+) -> np.ndarray:
+    """v(C+ab) - v(C+a) - v(C+b) + v(C), per task, in one context.
+
+    Positive means the pair is worth more together than the sum of its parts;
+    negative means the two are substitutes and stacking them wastes context.
+    """
+    return (
+        np.asarray(values[context | {a, b}], dtype=float)
+        - np.asarray(values[context | {a}], dtype=float)
+        - np.asarray(values[context | {b}], dtype=float)
+        + np.asarray(values[context], dtype=float)
+    )
+
+
+def interaction_index_by_task(
+    values: Mapping[frozenset, np.ndarray],
+    players: Sequence[str],
+) -> np.ndarray:
+    """Shapley interaction index for every pair, computed per task.
+
+    The Shapley value answers "what is this skill worth on average". It cannot
+    answer "is skill 1 better paired with skill 3 than with skill 2", because
+    it collapses the coalition structure into one number per player. The
+    interaction index is the generalisation that keeps it: for each pair it
+    averages the second-order difference
+
+        v(C + ij) - v(C + i) - v(C + j) + v(C)
+
+    over every context C, with the same coalition weighting that makes the
+    Shapley value fair. Positive entries are synergy, negative entries are
+    redundancy, and zero means the two skills neither help nor hinder one
+    another.
+
+    Returns a symmetric (n_players, n_players, n_tasks) array with a zero
+    diagonal.
+    """
+    n = len(players)
+    if n < 2:
+        raise ValueError("interaction needs at least two players")
+    expected = 1 << n
+    if len(values) != expected:
+        raise ValueError(
+            f"the interaction index needs all {expected} subsets; got {len(values)}"
+        )
+    n_tasks = len(next(iter(values.values())))
+    weights = _interaction_weights(n)
+    out = np.zeros((n, n, n_tasks))
+    index = {p: i for i, p in enumerate(players)}
+
+    for a, b in itertools.combinations(players, 2):
+        others = [p for p in players if p not in (a, b)]
+        acc = np.zeros(n_tasks)
+        for size in range(n - 1):
+            for coalition in itertools.combinations(others, size):
+                acc += weights[size] * pairwise_lift(values, a, b, frozenset(coalition))
+        i, j = index[a], index[b]
+        out[i, j] = acc
+        out[j, i] = acc
+    return out
+
+
+def compare_coalitions(
+    values: Mapping[frozenset, np.ndarray],
+    left: Sequence[str],
+    right: Sequence[str],
+    n_boot: int = 2000,
+    alpha: float = 0.05,
+    seed: int = 0,
+) -> Interval:
+    """Is this combination better than that one? v(left) - v(right), paired.
+
+    The literal question a practitioner asks -- "should I load skill 1 with
+    skill 3 or with skill 2" -- with an interval attached. Bootstrapped over
+    tasks, so the comparison respects the blocking.
+    """
+    a, b = frozenset(left), frozenset(right)
+    for key in (a, b):
+        if key not in values:
+            raise KeyError(f"coalition {sorted(key) or '(empty)'} was never run")
+    diff = np.asarray(values[a], dtype=float) - np.asarray(values[b], dtype=float)
+    rng = np.random.default_rng(seed)
+    draws = np.array(
+        [diff[rng.integers(0, diff.size, diff.size)].mean() for _ in range(n_boot)]
+    )
+    return Interval(
+        float(diff.mean()),
+        float(np.quantile(draws, alpha / 2)),
+        float(np.quantile(draws, 1 - alpha / 2)),
+    )
+
+
+def best_coalitions(
+    values: Mapping[frozenset, np.ndarray],
+    size: int | None = None,
+    top: int = 10,
+) -> list[tuple[tuple[str, ...], float]]:
+    """Rank the measured coalitions by mean outcome.
+
+    With ``size`` given, ranks only coalitions of exactly that many skills,
+    which is the shape of the budget question: given room for three skills,
+    which three? Reads straight off the exact stage, where every subset of the
+    survivors was run.
+    """
+    rows = [
+        (tuple(sorted(key)), float(np.mean(vec)))
+        for key, vec in values.items()
+        if size is None or len(key) == size
+    ]
+    rows.sort(key=lambda kv: -kv[1])
+    return rows[:top]
