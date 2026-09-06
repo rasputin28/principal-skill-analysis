@@ -320,11 +320,14 @@ one.
 The second is a **richer outcome than the binary verdict**. Recording only whether a task was
 resolved discards information available in the same run. I additionally record the fraction of
 fail-to-pass tests satisfied, the number of turns to solution, the tokens consumed, and whether
-the patch touched the files the reference patch touched. The primary outcome is declared in the
-pre-registration; the remainder are secondary. The cost measures are not merely covariates: a
-skill that buys two points of accuracy at triple the token cost is a different product from one
-that buys the same two points for free, and reporting the lift without the cost would be
-incomplete.
+the patch touched the files the reference patch touched. There are two **co-primary** outcomes, declared here
+before any data exists, which is the only point at which declaring them is legitimate:
+resolution, and resolution per dollar. The cost measures are not covariates. A skill that buys
+two points of accuracy at triple the token cost is a different product from one that buys the
+same two points for free, and to an organization sizing a fleet of agents it is very often the
+worse product. Attributions are therefore computed twice, once on each outcome, and a skill whose
+sign differs between them is reported as such rather than resolved in favour of the flattering
+reading. The remaining measures are secondary.
 
 The third is **restriction to the informative band**. A pilot classifies tasks by their
 difficulty under the baseline. Tasks the baseline always solves and tasks it never solves carry
