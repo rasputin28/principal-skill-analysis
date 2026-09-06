@@ -455,3 +455,111 @@ def minimal_spanning_subset(
             chosen.append(best)
     chosen += [s for s in structure.unclustered if phi.get(s, 0.0) > 0]
     return tuple(sorted(chosen))
+
+
+# --------------------------------------------------------------------------
+# Arbitrary order -- beyond pairs
+# --------------------------------------------------------------------------
+
+def interaction_index(
+    values: Mapping[frozenset, np.ndarray],
+    players: Sequence[str],
+    subset: Sequence[str],
+) -> np.ndarray:
+    """Shapley interaction index of arbitrary order, per task.
+
+    Generalises both estimators above. For a subset ``T`` of size ``t``,
+
+        I(T) = sum over C in S\\T of  w(|C|) * sum over L in T of (-1)^(t-|L|) v(C + L)
+
+    with ``w(c) = c! (n - c - t)! / (n - t + 1)!``. At ``t = 1`` this is exactly
+    the Shapley value; at ``t = 2`` it is exactly the pairwise interaction index.
+    Both identities are asserted in the test suite rather than asserted here.
+
+    Use it to ask about a specific group -- does this trio work together --
+    without enumerating every trio. Enumerating all orders would produce 2**k
+    numbers, which is the matrix-not-a-finding problem again; for group-level
+    structure use :func:`redundancy_axes` and :func:`coalition_curve` instead.
+    """
+    subset = list(subset)
+    t, n = len(subset), len(players)
+    if t == 0:
+        raise ValueError("the interaction of the empty set is not defined")
+    if not set(subset) <= set(players):
+        raise ValueError(f"not players: {sorted(set(subset) - set(players))}")
+    others = [p for p in players if p not in subset]
+    n_tasks = len(next(iter(values.values())))
+    weights = np.array(
+        [
+            math.factorial(c) * math.factorial(n - c - t) / math.factorial(n - t + 1)
+            for c in range(n - t + 1)
+        ]
+    )
+    acc = np.zeros(n_tasks)
+    for size in range(len(others) + 1):
+        for context in itertools.combinations(others, size):
+            base = frozenset(context)
+            delta = np.zeros(n_tasks)
+            for take in range(t + 1):
+                sign = (-1) ** (t - take)
+                for chosen in itertools.combinations(subset, take):
+                    key = base | frozenset(chosen)
+                    if key not in values:
+                        raise KeyError(
+                            f"coalition {sorted(key) or '(empty)'} was never run; "
+                            "the interaction index needs the complete subset space"
+                        )
+                    delta += sign * np.asarray(values[key], dtype=float)
+            acc += weights[size] * delta
+    return acc
+
+
+@dataclass(frozen=True)
+class CoalitionCurve:
+    sizes: tuple[int, ...]
+    best_coalition: tuple[tuple[str, ...], ...]
+    best_value: np.ndarray
+    additive_prediction: np.ndarray
+    gap: np.ndarray            # best_value - additive_prediction; see coalition_curve
+
+
+def coalition_curve(
+    values: Mapping[frozenset, np.ndarray],
+    phi: Mapping[str, float],
+    baseline: float | None = None,
+) -> CoalitionCurve:
+    """How much is the best combination of each size actually worth?
+
+    This is the question a catalog of four, five or forty skills poses and that
+    no per-skill ranking answers: given room for ``m`` skills, what is the best
+    ``m``, and does adding the next one still pay? For each size it reports the
+    best measured coalition, its value, what a purely additive reading of the
+    attributions would have predicted for that same set, and the gap between
+    them. A persistently negative gap is subadditivity -- the catalog's skills
+    buying one another's work a second time -- and it is where the curve
+    flattens that a context budget should stop.
+
+    Read directly off the exact stage. No model, no extrapolation: every
+    coalition named here was actually run.
+    """
+    by_size: dict[int, list[tuple[frozenset, float]]] = {}
+    for key, vec in values.items():
+        by_size.setdefault(len(key), []).append((key, float(np.mean(vec))))
+    if baseline is None:
+        baseline = float(np.mean(values[frozenset()])) if frozenset() in values else 0.0
+
+    sizes, coalitions, best, additive = [], [], [], []
+    for size in sorted(by_size):
+        key, value = max(by_size[size], key=lambda kv: kv[1])
+        sizes.append(size)
+        coalitions.append(tuple(sorted(key)))
+        best.append(value)
+        additive.append(baseline + sum(phi.get(p, 0.0) for p in key))
+    best_arr, additive_arr = np.array(best), np.array(additive)
+    return CoalitionCurve(
+        sizes=tuple(sizes),
+        best_coalition=tuple(coalitions),
+        best_value=best_arr,
+        additive_prediction=additive_arr,
+        gap=best_arr - additive_arr,
+    )

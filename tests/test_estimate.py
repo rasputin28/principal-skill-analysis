@@ -227,3 +227,83 @@ def test_minimal_spanning_subset_keeps_one_per_area_and_drops_the_useless():
 def test_redundancy_axes_reject_an_asymmetric_matrix():
     with pytest.raises(ValueError, match="symmetric"):
         estimate.redundancy_axes(np.array([[0.0, 1.0], [2.0, 0.0]]), ["a", "b"])
+
+
+def test_general_interaction_index_reproduces_the_shapley_value_at_order_one():
+    """The general index must contain the special cases, not merely resemble them."""
+    rng = np.random.default_rng(21)
+    players = ["a", "b", "c", "d"]
+    values = {
+        frozenset(c): rng.normal(size=3)
+        for s in range(5)
+        for c in itertools.combinations(players, s)
+    }
+    phi = estimate.shapley_exact_by_task(values, players)
+    for i, p in enumerate(players):
+        general = estimate.interaction_index(values, players, [p])
+        assert np.allclose(general, phi[i], atol=1e-12)
+
+
+def test_general_interaction_index_reproduces_the_pairwise_index_at_order_two():
+    rng = np.random.default_rng(22)
+    players = ["a", "b", "c", "d"]
+    values = {
+        frozenset(c): rng.normal(size=3)
+        for s in range(5)
+        for c in itertools.combinations(players, s)
+    }
+    pairwise = estimate.interaction_index_by_task(values, players)
+    for i, j in itertools.combinations(range(4), 2):
+        general = estimate.interaction_index(values, players, [players[i], players[j]])
+        assert np.allclose(general, pairwise[i, j], atol=1e-12)
+
+
+def test_third_order_interaction_is_detected_where_pairs_show_nothing():
+    """A trio that only works all together: every pair reads zero, the triple does not."""
+    players = ["a", "b", "c"]
+    values = _table(lambda c: 1.0 if len(c) == 3 else 0.0, players)
+    for pair in itertools.combinations(players, 2):
+        assert estimate.interaction_index(values, players, list(pair)).mean() != pytest.approx(0.0)
+    triple = estimate.interaction_index(values, players, players).mean()
+    assert triple == pytest.approx(1.0)
+
+
+def test_coalition_curve_flattens_where_the_catalog_stops_paying():
+    players = ["a", "b", "c", "d"]
+    # a and b are real; c and d duplicate a and buy nothing on top of it.
+    def value(coalition):
+        v = 0.0
+        if "a" in coalition or "c" in coalition or "d" in coalition:
+            v += 0.30
+        if "b" in coalition:
+            v += 0.10
+        return v
+    values = _table(lambda c: value(c), players, n_tasks=5)
+    phi = {p: float(v) for p, v in zip(players, estimate.shapley_exact_by_task(values, players).mean(axis=1))}
+    curve = estimate.coalition_curve(values, phi)
+    assert curve.sizes == (0, 1, 2, 3, 4)
+    assert curve.best_value[2] == pytest.approx(0.40)
+    assert curve.best_value[3] == pytest.approx(0.40)   # the third skill adds nothing
+    # Redundancy shows as a positive gap in the middle: Shapley splits credit
+    # among substitutes, so any one of them beats its own share.
+    assert curve.gap[1] > 0
+    # And the gap must vanish at both ends, by the efficiency property.
+    assert curve.gap[0] == pytest.approx(0.0)
+    assert curve.gap[-1] == pytest.approx(0.0)
+
+
+def test_coalition_curve_shows_complementarity_as_a_negative_gap():
+    """Two skills worth nothing apart and everything together."""
+    players = ["a", "b"]
+    values = _table(lambda c: 1.0 if len(c) == 2 else 0.0, players, n_tasks=4)
+    phi = {p: float(v) for p, v in zip(players, estimate.shapley_exact_by_task(values, players).mean(axis=1))}
+    curve = estimate.coalition_curve(values, phi)
+    assert curve.gap[1] < 0          # one alone falls short of its attributed share
+    assert curve.gap[-1] == pytest.approx(0.0)
+
+
+def test_interaction_index_rejects_an_unknown_player():
+    players = ["a", "b"]
+    values = _table(lambda c: float(len(c)), players)
+    with pytest.raises(ValueError, match="not players"):
+        estimate.interaction_index(values, players, ["a", "z"])
