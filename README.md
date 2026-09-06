@@ -72,7 +72,7 @@ An attribution without these is a number of unknown provenance.
 ## Install
 
 ```bash
-git clone https://github.com/rasputin28/psa && cd psa
+git clone https://github.com/rasputin28/principal-skill-analysis && cd principal-skill-analysis
 python3 -m venv .venv && ./.venv/bin/pip install -e ".[dev]"
 ./.venv/bin/python -m pytest -q
 ```
