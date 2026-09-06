@@ -27,8 +27,17 @@ jobs:
           fi
           echo "no undefined references or citations"
       - name: Check that paper.md is in sync with the LaTeX
+        env:
+          # Pinned: pandoc's markdown output differs between versions, so an
+          # unpinned installation turns this check into noise about the runner
+          # rather than about the document. Keep in step with PANDOC_VERSION in
+          # scripts/build-paper-md.sh.
+          PANDOC_VERSION: "3.10"
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
+          curl -fsSL -o /tmp/pandoc.deb \
+            "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-1-amd64.deb"
+          sudo dpkg -i /tmp/pandoc.deb
+          pandoc --version | head -1
           ./scripts/build-paper-md.sh
           if ! git diff --quiet -- paper.md; then
             echo "paper.md is stale. Run scripts/build-paper-md.sh and commit the result."
