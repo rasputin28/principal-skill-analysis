@@ -56,6 +56,12 @@ resembles one.
 φᵢ = Σ_{C ⊆ S\{i}}  [ |C|! (N−|C|−1)! / N! ] · [ v(C ∪ {i}) − v(C) ]
 ```
 
+The paper derives this rather than citing it: the weights come from counting how many orderings
+give a skill exactly that set of predecessors, and additivity is a three-line telescoping proof.
+Linearity is the property usually disputed, so it is worth knowing it can be dropped — Young
+(1985) replaces it with monotonicity and the same estimator is again the unique one. Two
+independent routes to the same place is better evidence than either alone.
+
 **5. But that needs every subset, and there are `2^N` of them.** The `2` is not a pair — it is a
 switch: each skill loaded or not, two states per skill. At 39 skills that is 5.5 × 10¹¹
 configurations.
@@ -148,7 +154,11 @@ is what turns an intractable sample size into a tractable one.
 
 ## Controls
 
-An attribution without these is a number of unknown provenance.
+An attribution without these is a number of unknown provenance. The placebo in particular is
+required by known results, not adopted as hygiene: semantically equivalent reformattings of a
+prompt move accuracy by tens of points (Sclar et al., ICLR 2024), and position inside a long
+context changes whether information is used at all (Liu et al., TACL 2024). Loading any skill
+changes both.
 
 - **Length-matched placebo.** Loading a skill lengthens the prompt. `psa.controls.make_placebo`
   writes an inert skill matched to the catalog's median length. Its `φ` must have a confidence

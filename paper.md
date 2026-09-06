@@ -28,9 +28,23 @@ This document is a pre-registration. The design, the hypotheses and the analysis
 
 SWE-bench established the practice of evaluating agents on real repository issues with automated verification through the repository’s own test suite, and SWE-bench Verified produced a human-validated subset in which the tests are known to discriminate correct from incorrect patches. The binary pass-or-fail outcome these benchmarks provide is what makes the present design feasible: without an automatic and trustworthy verdict, the number of runs required could not be graded. Agent harnesses evaluated on them, such as SWE-agent , are reported as complete systems, which is the aggregate reporting this work seeks to decompose.
 
+#### Reported gains that do not survive controlled comparison.
+
+The suspicion motivating this work is not novel, and it is not cynicism. In field after field, a body of claimed architectural progress has been re-examined under a controlled budget and found to be largely an artefact of unequal tuning. Lucic et al. compared generative adversarial networks under matched computational budgets and found that most models reached similar scores, with the reported differences attributable to tuning and random restarts rather than to the algorithmic changes credited with them. Melis et al. re-evaluated recurrent language-model architectures under large-scale black-box hyperparameter search and found that a properly regularised standard LSTM outperformed the newer models said to have superseded it. Ferrari Dacrema et al. reproduced recent neural recommendation methods and found that most were outperformed by simple, long-established baselines that had been tuned with comparable care. Musgrave et al. found the same pattern in deep metric learning, where a decade of claimed improvement was marginal once the experimental protocol was equalised.
+
+The common structure of these results is instructive for the present study. In each case the reported improvement was real as measured and misattributed as explained: the gain existed, but it belonged to a factor the authors were not varying deliberately. Skill collections are in exactly the position those architectures were in, with the additional difficulty that their components are never varied separately at all. What corrected the record in each case was not argument but a controlled comparison at equal budget, which is what this instrument is built to run.
+
+#### Statistical practice in benchmark comparison.
+
+Bouthillier et al. model the benchmarking process itself and show that concluding one method beats another requires accounting for several sources of variance simultaneously, of which the choice of data sample is frequently dominant. Agarwal et al. make a closely related argument for reinforcement learning and recommend stratified bootstrap confidence intervals and performance profiles across tasks and runs in place of point comparisons. The task-paired design and the task-level bootstrap of Section <a href="#sec:power" data-reference-type="ref" data-reference="sec:power">7</a> follow their recommendations, applied to a setting where the unit of blocking is the benchmark task.
+
+#### Sensitivity to prompt surface and to context.
+
+The length-matched placebo of Section <a href="#sec:controls" data-reference-type="ref" data-reference="sec:controls">8</a> is required by known results rather than adopted as good hygiene. Sclar et al. show that semantically equivalent reformattings of a prompt move accuracy by as much as tens of points on open models, and that the sensitivity persists as model size and shot count increase. Liu et al. show that where information sits inside a long context materially changes whether a model uses it. A skill is delivered as text placed into a context window, so both effects operate on it directly: loading any skill changes prompt surface and context occupancy at once. Without a control matched on length, an attribution cannot be separated from those two mechanisms.
+
 #### Attribution by Shapley value.
 
-The Shapley value was introduced to distribute the payoff of a cooperative game among its players. Its adoption in machine learning has been broad: SHAP applies it to feature attribution, and Data Shapley to valuing training examples. Both face the same computational obstacle that appears here—the number of coalitions grows exponentially—and both answer it with sampling. I take a different route, in Section <a href="#sec:design" data-reference-type="ref" data-reference="sec:design">5</a>, because the effect sizes expected here are small enough that a sampling estimator’s variance would dominate the quantity estimated. The generalisation of the Shapley value to interactions among players is due to Grabisch and Roubens .
+The Shapley value was introduced to distribute the payoff of a cooperative game among its players. Its adoption in machine learning has been broad: SHAP applies it to feature attribution, and Data Shapley to valuing training examples. Both face the same computational obstacle that appears here—the number of coalitions grows exponentially—and both answer it with sampling. I take a different route, in Section <a href="#sec:design" data-reference-type="ref" data-reference="sec:design">5</a>, because the effect sizes expected here are small enough that a sampling estimator’s variance would dominate the quantity estimated. Covert et al. take the step closest to the present work by applying the construction not to individual predictions but to a global measure of predictive power, which is structurally what $`v`$ is here. The permutation-sampling estimator used for the validation pass of Section <a href="#sec:validation" data-reference-type="ref" data-reference="sec:validation">5.4</a> is that of Castro et al. . The generalisation to interactions among players is due to Grabisch and Roubens .
 
 #### Design of experiments.
 
@@ -195,7 +209,9 @@ The construction above is one particular way of averaging. It is fair to ask whe
 
 </div>
 
-This is the one result in the section taken from the literature rather than proved, and the reason is worth stating: the uniqueness argument is a linear-algebraic decomposition of the space of value functions into unanimity games, and reproducing it here would add length without adding assurance, since it is standard and has been checked for seventy years. See . What the theorem contributes to the present argument is that the four properties are not a wish list from which a convenient estimator may be picked. By Theorem <a href="#thm:shapley" data-reference-type="ref" data-reference="thm:shapley">9</a> they admit exactly one estimator, so any disagreement about the estimator is a disagreement about the properties, which is where such an argument belongs.
+Linearity is the property most often disputed in machine-learning applications of this construction, so it is worth recording that the result does not depend on it. Young shows that linearity can be dropped entirely and replaced by monotonicity, the requirement that a skill whose contribution to every coalition rises should not be credited with less, and that the same estimator is again the unique one satisfying the remaining properties. A reader who rejects linearity therefore does not obtain a different estimator; they obtain the same one from a different and arguably more intuitive premise. That the construction is reachable from two independent directions is stronger evidence for it than either axiomatisation alone.
+
+Theorem <a href="#thm:shapley" data-reference-type="ref" data-reference="thm:shapley">9</a> is the one result in the section taken from the literature rather than proved, and the reason is worth stating: the uniqueness argument is a linear-algebraic decomposition of the space of value functions into unanimity games, and reproducing it here would add length without adding assurance, since it is standard and has been checked for seventy years. See . What the theorem contributes to the present argument is that the four properties are not a wish list from which a convenient estimator may be picked. By Theorem <a href="#thm:shapley" data-reference-type="ref" data-reference="thm:shapley">9</a> they admit exactly one estimator, so any disagreement about the estimator is a disagreement about the properties, which is where such an argument belongs.
 
 ## Why the usual objection to Shapley attribution does not apply here
 
@@ -330,7 +346,7 @@ The second is a *richer outcome than the binary verdict*. There are two co-prima
 
 The third is *restriction to the informative band*. Tasks the baseline always solves and tasks it never solves carry no information about skills. A pilot classifies tasks by baseline difficulty and the study is restricted to the intermediate band; the cutoff is fixed in advance and the excluded tasks published.
 
-Confidence intervals are obtained by bootstrapping over tasks rather than over runs, preserving the pairing.
+Confidence intervals are obtained by bootstrapping over tasks rather than over runs, preserving the pairing, in line with the practice urged by .
 
 # Controls
 
@@ -338,7 +354,7 @@ Four controls are required; without them the measurements are not attributable t
 
 #### A length-matched placebo.
 
-Loading a skill lengthens the prompt, and a skill could appear to work for no reason other than that. Every design includes a placebo whose token length matches the catalogue median and whose content is plausible in form but carries no actionable instruction. Its attribution must have a confidence interval containing zero; if it does not, the instrument is miscalibrated and no results are reported from that run set. This is checked before any quantity of interest is examined.
+Loading a skill lengthens the prompt, and a skill could appear to work for no reason other than that. This is not a hypothetical mechanism: prompt surface and context occupancy are both known to move model behaviour on their own . Every design includes a placebo whose token length matches the catalogue median and whose content is plausible in form but carries no actionable instruction. Its attribution must have a confidence interval containing zero; if it does not, the instrument is miscalibrated and no results are reported from that run set. This is checked before any quantity of interest is examined.
 
 #### Availability versus invocation.
 
@@ -386,7 +402,7 @@ The instrument measures a catalogue under a fixed base agent, benchmark, model a
 
 # Conclusion
 
-The disagreement over which agent scaffolding works is an empirical question the field currently settles by assertion. I have specified an instrument that settles it by measurement: Shapley attribution over skill subsets for the per-skill question, uniquely determined by four requirements each of which is a substantive claim about catalogues; the interaction index for the question of which combinations work; an eigendecomposition of the interaction matrix, and Lemma <a href="#lem:block" data-reference-type="ref" data-reference="lem:block">13</a>, for the question of which areas a catalogue covers and which subset spans them; a two-stage design that makes all of it computable, with Lemma <a href="#lem:balance" data-reference-type="ref" data-reference="lem:balance">11</a> establishing that the shortcut does not discard what the study exists to find; a task-paired analysis that makes it affordable; and controls, chief among them a length-matched placebo and an invocation trace, that make it attributable. The instrument takes the catalogue as an input, so that a collection published by any author can be measured on the same footing as any other, which is the condition under which the disagreement can be resolved rather than repeated.
+The disagreement over which agent scaffolding works is an empirical question the field currently settles by assertion. I have specified an instrument that settles it by measurement: Shapley attribution over skill subsets for the per-skill question, uniquely determined by four requirements each of which is a substantive claim about catalogues, and reachable from a second, independent axiomatisation that does not assume linearity at all; the interaction index for the question of which combinations work; an eigendecomposition of the interaction matrix, and Lemma <a href="#lem:block" data-reference-type="ref" data-reference="lem:block">13</a>, for the question of which areas a catalogue covers and which subset spans them; a two-stage design that makes all of it computable, with Lemma <a href="#lem:balance" data-reference-type="ref" data-reference="lem:balance">11</a> establishing that the shortcut does not discard what the study exists to find; a task-paired analysis that makes it affordable; and controls, chief among them a length-matched placebo and an invocation trace, that make it attributable. The instrument takes the catalogue as an input, so that a collection published by any author can be measured on the same footing as any other, which is the condition under which the disagreement can be resolved rather than repeated.
 
 # Author contributions and tooling
 
@@ -398,9 +414,19 @@ Disclosing this is not a formality. A study whose subject is the measurement of 
 
 99
 
+R. Agarwal, M. Schwarzer, P. S. Castro, A. Courville and M. G. Bellemare. Deep Reinforcement Learning at the Edge of the Statistical Precipice. *NeurIPS*, 2021, pp. 29304–29320.
+
 G. E. P. Box, J. S. Hunter and W. G. Hunter. *Statistics for Experimenters: Design, Innovation, and Discovery*, 2nd edition. Wiley, 2005.
 
+X. Bouthillier, P. Delaunay, M. Bronzi, A. Trofimov, B. Nichyporuk, J. Szeto, N. Mohammadi Sepahvand, E. Raff, K. Madan, V. Voleti, S. Ebrahimi Kahou, V. Michalski, T. Arbel, C. Pal, G. Varoquaux and P. Vincent. Accounting for Variance in Machine Learning Benchmarks. *Proceedings of Machine Learning and Systems (MLSys)*, 2021.
+
+J. Castro, D. Gómez and J. Tejada. Polynomial calculation of the Shapley value based on sampling. *Computers and Operations Research*, 36(5):1726–1730, 2009.
+
 C. D. Chambers. Registered Reports: A new publishing initiative at Cortex. *Cortex*, 49(3):609–610, 2013.
+
+I. Covert, S. M. Lundberg and S.-I. Lee. Understanding Global Feature Contributions With Additive Importance Measures. *NeurIPS*, 2020.
+
+M. Ferrari Dacrema, P. Cremonesi and D. Jannach. Are We Really Making Much Progress? A Worrying Analysis of Recent Neural Recommendation Approaches. *RecSys*, 2019.
 
 A. Ghorbani and J. Zou. Data Shapley: Equitable Valuation of Data for Machine Learning. *ICML*, 2019.
 
@@ -410,16 +436,28 @@ C. E. Jimenez, J. Yang, A. Wettig, S. Yao, K. Pei, O. Press and K. Narasi
 
 I. E. Kumar, S. Venkatasubramanian, C. Scheidegger and S. Friedler. Problems with Shapley-value-based explanations as feature importance measures. *ICML*, 2020.
 
+N. F. Liu, K. Lin, J. Hewitt, A. Paranjape, M. Bevilacqua, F. Petroni and P. Liang. Lost in the Middle: How Language Models Use Long Contexts. *Transactions of the Association for Computational Linguistics*, 12:157–173, 2024.
+
+M. Lucic, K. Kurach, M. Michalski, S. Gelly and O. Bousquet. Are GANs Created Equal? A Large-Scale Study. *NeurIPS*, 2018, pp. 698–707.
+
 S. M. Lundberg and S.-I. Lee. A Unified Approach to Interpreting Model Predictions. *NeurIPS*, 2017.
+
+G. Melis, C. Dyer and P. Blunsom. On the State of the Art of Evaluation in Neural Language Models. *ICLR*, 2018.
+
+K. Musgrave, S. Belongie and S.-N. Lim. A Metric Learning Reality Check. *ECCV*, 2020, pp. 681–699.
 
 OpenAI. Introducing SWE-bench Verified, 2024.
 
 R. L. Plackett and J. P. Burman. The Design of Optimum Multifactorial Experiments. *Biometrika*, 33(4):305–325, 1946.
+
+M. Sclar, Y. Choi, Y. Tsvetkov and A. Suhr. Quantifying Language Models’ Sensitivity to Spurious Features in Prompt Design, or: How I learned to start worrying about prompt formatting. *ICLR*, 2024.
 
 L. S. Shapley. A Value for $`n`$-Person Games. In *Contributions to the Theory of Games, Volume II*, Princeton University Press, 1953.
 
 J. Suro. Semantic Tokens in Retrieval Augmented Generation. arXiv:2412.02563, 2024.
 
 J. Yang, C. E. Jimenez, A. Wettig, K. Lieret, S. Yao, K. Narasimhan and O. Press. SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering. *NeurIPS*, 2024.
+
+H. P. Young. Monotonic solutions of cooperative games. *International Journal of Game Theory*, 14(2):65–72, 1985.
 
 </div>
