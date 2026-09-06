@@ -176,3 +176,54 @@ def test_compare_coalitions_refuses_an_unrun_combination():
     values = _table(lambda c: float(len(c)), players)
     with pytest.raises(KeyError, match="never run"):
         estimate.compare_coalitions(values, ["a", "b", "z"], ["a"])
+
+
+def _block_interaction(groups, independents, strength):
+    """Interaction matrix: every pair inside a group is redundant at -strength."""
+    skills = [s for g in groups for s in g] + list(independents)
+    index = {s: i for i, s in enumerate(skills)}
+    m = np.zeros((len(skills), len(skills)))
+    for group in groups:
+        for a, b in itertools.combinations(group, 2):
+            m[index[a], index[b]] = m[index[b], index[a]] = -strength
+    return skills, m
+
+
+def test_redundancy_axes_recover_a_planted_block():
+    """Three mutually redundant skills must land on one axis, same sign.
+
+    The algebra is exact: a block of m skills interacting pairwise at -c has an
+    eigenvalue of -c(m-1) whose eigenvector is uniform over the block.
+    """
+    skills, matrix = _block_interaction([("a", "b", "c")], ["d", "e"], strength=0.1)
+    structure = estimate.redundancy_axes(matrix, skills)
+    assert structure.clusters == (("a", "b", "c"),)
+    assert set(structure.unclustered) == {"d", "e"}
+    assert structure.eigenvalues[0] == pytest.approx(-0.1 * (3 - 1))
+
+
+def test_redundancy_axes_separate_two_independent_blocks():
+    skills, matrix = _block_interaction([("a", "b"), ("c", "d")], ["e"], strength=0.2)
+    structure = estimate.redundancy_axes(matrix, skills)
+    found = {frozenset(c) for c in structure.clusters}
+    assert found == {frozenset({"a", "b"}), frozenset({"c", "d"})}
+    assert structure.unclustered == ("e",)
+
+
+def test_an_additive_catalog_has_no_redundancy_areas():
+    skills = ["a", "b", "c"]
+    structure = estimate.redundancy_axes(np.zeros((3, 3)), skills)
+    assert structure.clusters == ()
+    assert structure.unclustered == ("a", "b", "c")
+
+
+def test_minimal_spanning_subset_keeps_one_per_area_and_drops_the_useless():
+    skills, matrix = _block_interaction([("a", "b", "c")], ["d", "e"], strength=0.1)
+    structure = estimate.redundancy_axes(matrix, skills)
+    phi = {"a": 0.02, "b": 0.09, "c": 0.05, "d": 0.04, "e": -0.01}
+    assert estimate.minimal_spanning_subset(structure, phi) == ("b", "d")
+
+
+def test_redundancy_axes_reject_an_asymmetric_matrix():
+    with pytest.raises(ValueError, match="symmetric"):
+        estimate.redundancy_axes(np.array([[0.0, 1.0], [2.0, 0.0]]), ["a", "b"])

@@ -363,3 +363,95 @@ def best_coalitions(
     ]
     rows.sort(key=lambda kv: -kv[1])
     return rows[:top]
+
+
+# --------------------------------------------------------------------------
+# Orthogonal areas -- collapsing the interaction matrix into decisions
+# --------------------------------------------------------------------------
+
+@dataclass(frozen=True)
+class RedundancyStructure:
+    skills: tuple[str, ...]
+    eigenvalues: np.ndarray           # ascending; most negative first
+    loadings: np.ndarray              # (n_skills, n_axes)
+    clusters: tuple[tuple[str, ...], ...]
+    unclustered: tuple[str, ...]
+
+
+def redundancy_axes(
+    interaction: np.ndarray,
+    skills: Sequence[str],
+    max_axes: int = 5,
+    eigenvalue_tolerance: float = 1e-9,
+    loading_threshold: float = 0.35,
+) -> RedundancyStructure:
+    """Collapse the pairwise interaction matrix into orthogonal areas.
+
+    The interaction index gives n(n-1)/2 pairwise numbers, which for a catalog
+    of any size is a matrix rather than a finding. This decomposes it instead.
+
+    The interaction matrix is symmetric, so its eigenvectors are orthogonal by
+    construction and live in skill space directly. The reading is exact rather
+    than interpretive: a block of ``m`` mutually redundant skills, each pair
+    interacting at ``-c``, produces an eigenvalue of ``-c(m-1)`` whose
+    eigenvector is uniform over that block. The most negative axes therefore
+    name the areas where a catalog has piled several skills onto one job.
+
+    Orthogonality here is *imposed by the method, not discovered in the data*.
+    The axes returned are the orthogonal directions that best account for the
+    observed redundancy; they are not evidence that the underlying capability
+    structure is orthogonal. Both thresholds are pre-registered analysis
+    choices, not defaults to be tuned after seeing the result.
+    """
+    matrix = np.asarray(interaction, dtype=float)
+    if matrix.shape[0] != matrix.shape[1] or matrix.shape[0] != len(skills):
+        raise ValueError("interaction matrix must be square and match the skills given")
+    if not np.allclose(matrix, matrix.T, atol=1e-9):
+        raise ValueError("interaction matrix must be symmetric")
+
+    eigenvalues, vectors = np.linalg.eigh(matrix)   # ascending
+    keep = [i for i in range(len(eigenvalues)) if eigenvalues[i] < -eigenvalue_tolerance]
+    keep = keep[:max_axes]
+    loadings = vectors[:, keep] if keep else np.zeros((len(skills), 0))
+
+    clusters: list[tuple[str, ...]] = []
+    assigned: set[str] = set()
+    for axis in range(loadings.shape[1]):
+        column = loadings[:, axis]
+        strong = [i for i in range(len(skills)) if abs(column[i]) >= loading_threshold]
+        # Members of one redundancy block load with a common sign.
+        for sign in (1, -1):
+            members = tuple(
+                skills[i] for i in strong if np.sign(column[i]) == sign and skills[i] not in assigned
+            )
+            if len(members) >= 2:
+                clusters.append(members)
+                assigned.update(members)
+    unclustered = tuple(s for s in skills if s not in assigned)
+    return RedundancyStructure(
+        skills=tuple(skills),
+        eigenvalues=eigenvalues[keep] if keep else np.array([]),
+        loadings=loadings,
+        clusters=tuple(clusters),
+        unclustered=unclustered,
+    )
+
+
+def minimal_spanning_subset(
+    structure: RedundancyStructure,
+    phi: Mapping[str, float],
+) -> tuple[str, ...]:
+    """One skill per redundancy area, plus everything that overlaps nothing.
+
+    The actionable form of the whole study: given a catalog whose skills
+    duplicate one another, this is the subset that covers every area it covers,
+    with the best-attributed representative kept in each. Skills with a
+    negative attribution are dropped rather than kept as representatives.
+    """
+    chosen: list[str] = []
+    for cluster in structure.clusters:
+        best = max(cluster, key=lambda s: phi.get(s, 0.0))
+        if phi.get(best, 0.0) > 0:
+            chosen.append(best)
+    chosen += [s for s in structure.unclustered if phi.get(s, 0.0) > 0]
+    return tuple(sorted(chosen))

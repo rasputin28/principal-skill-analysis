@@ -216,7 +216,41 @@ does guarantee is that a skill carrying a strong interaction is not discarded be
 stage can measure it, because in a balanced design a skill whose entire value is a pairwise
 interaction still shifts the marginal mean: its partner is present in half of the runs.
 
-### 4.4 Comparison across catalogs
+### 4.4 Orthogonal areas and the minimal spanning subset
+
+The interaction index of Section 4.3 produces `n(n-1)/2` pairwise numbers. For a catalog of any
+realistic size that is a matrix rather than a finding, and no one decides anything from it. The
+decision it should support is which *areas* of capability a catalog covers, where it has piled
+several skills onto one job, and what the smallest subset is that covers everything the whole
+catalog covers.
+
+The interaction matrix is symmetric, so its eigendecomposition yields axes that are orthogonal by
+construction and that live directly in skill space. The reading is algebraic rather than
+interpretive: a block of `m` mutually redundant skills, each pair interacting at `-c`, produces an
+eigenvalue of `-c(m-1)` whose eigenvector is uniform over the block. The most negative axes
+therefore name the redundancy areas, and each names its members with a common sign. Retaining the
+best-attributed representative of each area, together with every skill that overlaps nothing,
+gives the **minimal spanning subset**: the catalog's coverage at a fraction of its context cost.
+
+This is the quantity an institution sizing a fleet of agents actually needs, and it is why the
+per-skill ranking of Section 4.1 is insufficient on its own. A ranking says which skills are
+worth the most; it does not say which of them are worth the same thing twice.
+
+Two clarifications, both of which a reader is right to demand.
+
+First, **orthogonality here is imposed by the method, not discovered in the data.** An
+eigendecomposition returns orthogonal axes whether or not the underlying capability structure is
+orthogonal. The claim this analysis licenses is that these are the orthogonal directions best
+accounting for the observed redundancy — never that the areas themselves are orthogonal.
+
+Second, this analysis and the one in Section 4.2 operate at different resolutions and are not
+substitutes. The decomposition of the outcome matrix is available at screening scale and covers
+the entire catalog, but is coarse. The decomposition of the interaction matrix is exact but
+requires the full interaction matrix, which exists only over the surviving skills of the exact
+stage. The whole-catalog picture is therefore approximate and the precise picture is partial;
+both are reported, and neither is presented as the other.
+
+### 4.5 Comparison across catalogs
 
 For two catalogs `A` and `B` evaluated with the same base agent, benchmark, model and seeds, the
 comparable quantities are the total lifts `v(S_A) − v(∅)` and `v(S_B) − v(∅)`, the same lifts
@@ -352,8 +386,10 @@ highly on invocation ranks low on assignment because it is rarely triggered.
 
 **H6 (subadditivity).** Pairwise interaction indices within a published catalog are
 predominantly negative rather than positive: skills in these collections substitute for one
-another more often than they complement one another, so a catalog's total lift falls short of
-the sum of its parts and a small subset reproduces most of it.
+another more often than they complement one another, so a catalog's total lift falls short of the
+sum of its parts. The pre-specified derived quantity is the minimal spanning subset of Section
+4.4: I predict it contains no more than half the surviving skills while retaining at least 80% of
+the full catalog's lift, at materially lower context cost.
 
 **H5 (composition over provenance).** Between two catalogs matched on total token budget, the
 difference in total lift attributable to *which* skills are included exceeds the difference
@@ -383,7 +419,9 @@ The instrument measures a catalog under a fixed base agent, benchmark, model and
 attributions are conditional on all four. It does not establish that a skill is well written,
 only that its presence changed outcomes under these conditions. It cannot distinguish a skill
 that improves the agent's reasoning from one that merely constrains its output format into
-better alignment with the grader. The two-stage design trades exhaustiveness for feasibility and
+better alignment with the grader. The orthogonality of the areas in Section 4.4 is a property of the decomposition rather than a
+finding about capabilities, and the areas are recovered only among the skills that survive
+screening. The two-stage design trades exhaustiveness for feasibility and
 its screening stage can discard a skill whose contribution requires three or more partners; the
 validation pass of Section 5.3 bounds but does not eliminate this risk. Finally, the cost of the
 design scales with the product of configurations, tasks and repetitions, and the budget is the

@@ -49,6 +49,25 @@ Negative interaction is the expected case and the one nobody reports: two skills
 same job, both loaded, spending context to buy what one already bought. Hypothesis H6 says
 published catalogs are subadditive for exactly this reason.
 
+### From 741 pairs to a decision
+
+Pairwise numbers do not scale into a decision — 39 skills means 741 pairs. The interaction matrix
+is symmetric, so its eigendecomposition gives orthogonal axes in skill space, and the most
+negative ones name the areas where a catalog has piled several skills onto one job:
+
+```python
+structure = estimate.redundancy_axes(interaction, skills)
+estimate.minimal_spanning_subset(structure, phi)   # one per area; the rest is context cost
+```
+
+The reading is algebraic, not interpretive: a block of `m` mutually redundant skills interacting
+pairwise at `-c` yields an eigenvalue of `-c(m-1)` with a uniform eigenvector over the block, which
+is asserted in `tests/test_estimate.py::test_redundancy_axes_recover_a_planted_block`.
+
+Orthogonality here is *imposed by the method, not discovered in the data*. These are the
+orthogonal directions that best account for the observed redundancy; they are not evidence that
+capabilities are orthogonal.
+
 The exact stage runs every subset of the surviving skills, so all of this comes out of the same
 runs at no extra cost. The screening stage deliberately does not identify pairs — Resolution IV
 separates main effects from two-factor interactions but leaves those aliased with each other —
