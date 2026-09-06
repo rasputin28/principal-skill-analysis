@@ -1,0 +1,32 @@
+name: paper
+
+on:
+  push:
+    branches: [main]
+    paths: ['paper/**', '.github/workflows/paper.yml']
+  pull_request:
+    paths: ['paper/**']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile the paper
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: main.tex
+          working_directory: paper
+          latexmk_use_xelatex: false
+      - name: Fail on unresolved references
+        working-directory: paper
+        run: |
+          if grep -qE 'LaTeX Warning: (Reference|Citation).*undefined' main.log; then
+            grep -E 'LaTeX Warning: (Reference|Citation).*undefined' main.log
+            exit 1
+          fi
+          echo "no undefined references or citations"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paper-pdf
+          path: paper/main.pdf
