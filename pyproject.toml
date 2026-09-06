@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "psa"
+version = "0.1.0"
+description = "Principal Skill Analysis: attributing agent performance to individual skills and their combinations"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Joel Suro" }]
+dependencies = ["numpy>=1.26", "scipy>=1.11"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4"]
+
+[project.scripts]
+psa = "psa.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["psa*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
