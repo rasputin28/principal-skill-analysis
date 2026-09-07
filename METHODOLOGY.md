@@ -5,6 +5,55 @@ wrong and should be fixed; the paper is the argument, this is the specification.
 
 ---
 
+## 0. Terms
+
+Every technical word used below, defined once. Nothing here is assumed known.
+
+**Skill** — one written instruction file an agent can load. **Catalogue** — a set of them, pinned
+to a repository and revision. **Configuration** — the subset of a catalogue made available for one
+attempt at one task; it may be empty, one skill, or all of them. **Run** — one attempt: one agent,
+one task, one configuration. **Lift** — how much better the agent does with the whole catalogue
+loaded than with none of it.
+
+**Main effect of a skill** — the average result across the runs where that skill was loaded, minus
+the average across the runs where it was not. It is the crudest possible measure of a skill: what
+happens on average when it is present.
+
+**Balanced design** — a layout of runs in which every skill is loaded in half of them. **Orthogonal
+columns** — two skills arranged so that all four possibilities (both loaded, either one alone,
+neither) occur in a quarter of the runs each, so that neither skill's presence tells you anything
+about the other's.
+
+**Aliasing** — two different effects that produce the same pattern across the runs, and therefore
+cannot be told apart no matter how much data is collected. It is not a subtlety of interpretation:
+it is an identity between two columns of the design. Section 3.2 derives where it comes from.
+
+**Fractional factorial design** — a layout that runs only a fraction of the possible
+configurations, chosen so that the effects of interest can still be recovered. **Plackett--Burman
+design** — a standard recipe for building such a layout with the balance and orthogonality
+properties above. **Foldover** — appending a second copy of a design with every choice reversed,
+which doubles the runs and removes a specific kind of aliasing.
+
+**Shapley value** — the score given to a skill by averaging, over every combination of the others,
+how much the result improved at the moment that skill was added. **Interaction index** — the same
+idea applied to a pair: how much the worth of one skill changes depending on whether the other is
+loaded. **Eigendecomposition** — rewriting a symmetric table of pairwise numbers as a set of
+mutually independent directions, each with a number saying how much of the table it accounts for.
+
+**Bootstrap** — estimating how much a result would move under a different sample by repeatedly
+redrawing the sample you have, with replacement, and recomputing.
+
+**Fail-to-pass tests** — in a repository-issue benchmark, the tests that failed before the
+reference fix and passed after it. They are what the agent's patch has to satisfy.
+
+**Hermetic workspace** — a working directory containing the files of exactly one configuration and
+nothing else, verified rather than assumed.
+
+**Informative band** — the tasks that the baseline agent solves sometimes but not always. Tasks it
+always solves and tasks it never solves cannot reveal anything about skills.
+
+---
+
 ## 1. The unit of execution is a configuration, not a pair
 
 A **run** is one agent attempt at one benchmark task with one **configuration** loaded.
@@ -48,8 +97,25 @@ Cannot answer anything about attribution.
 
 ### 3.2 Screening — Resolution IV fractional factorial
 
-A Plackett–Burman design followed by its foldover. Runs required as a function of catalog size,
-computed by `psa.design.screening_design` rather than quoted from a table:
+**What "Resolution" means, since the table below uses it.** A design that runs only some of the
+possible configurations pays for that saving in aliasing: some pairs of effects become
+indistinguishable. Resolution names *which* pairs.
+
+| resolution | what is confused with what | consequence here |
+|---|---|---|
+| **III** | a skill's own effect with the effect of some *pair* of other skills | A skill that only works alongside one other is confounded with an ordinary solo effect, and can cancel to zero. Unusable for this study. |
+| **IV** | no skill's own effect with any pair, but pairs with *other pairs* | Every skill's own effect is clean. Pairs are preserved but cannot be told apart from each other yet. **This is what PSA screens with.** |
+| **V** | nothing among skills and pairs | Every skill and every pair separately measurable. Correct but far more expensive as the catalogue grows. |
+
+The numeral is the size of the smallest group of effects that gets confused together, so higher is
+cleaner and costlier. Section 3.2 of the paper derives all three from the estimator rather than
+asserting them.
+
+PSA screens at Resolution IV and pays double the runs of Resolution III for it, because the skills
+this study exists to find are exactly the ones Resolution III would lose.
+
+Runs required as a function of catalogue size, computed by `psa.design.screening_design` rather
+than quoted from a table:
 
 | skills (N) | Resolution III | **Resolution IV (used)** | full factorial `2^N` |
 |---:|---:|---:|---:|
@@ -167,8 +233,11 @@ to sum to the total lift, so no gap can exist at either end. The information is 
 1. **Length-matched placebo** — must have a confidence interval containing zero. If it does not,
    the run set reports nothing.
 2. **Saboteur** — must come out significantly negative.
-3. **Availability versus invocation** — every attribution is reported twice, intention-to-treat
-   and effect-among-invoked.
+3. **Availability versus invocation** — every attribution is reported twice. Once counting every
+   run where the skill was available whether or not the agent used it, which answers "what happens
+   if I install this" and is the convention clinical trials call *intention-to-treat*. Once
+   counting only the runs where it was actually invoked, which answers "what does it do when
+   used".
 4. **Contamination** — the attribution ordering is re-checked on post-cutoff tasks.
 
 ## 7. Outcomes

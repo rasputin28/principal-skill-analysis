@@ -22,6 +22,14 @@ I address all three by treating the collection as an input to a measurement inst
 
 This document is a pre-registration. The design, the hypotheses and the analysis plan are fixed here, before data collection, because the space of configurations is large enough that a determined analyst can always find a configuration producing an attractive result. A study of this shape that is not pre-registered is not defensible, and I would not believe one.
 
+# Terms
+
+Four words are used throughout in a specific sense, and everything else technical is defined where it first appears.
+
+A *skill* is one written instruction file that an agent can load, of the kind published in the collections this work measures. A *catalogue* is a set of such files, identified by the repository and revision it came from. A *configuration* is the subset of a catalogue made available to the agent for one attempt at one task; it may be empty, a single skill, or all of them. A *run* is one such attempt: one agent, one task, one configuration.
+
+The quantity every measurement here refers back to is the *lift*: how much better the agent does with the whole catalogue loaded than with none of it.
+
 # Related Work
 
 #### Benchmarks for coding agents.
@@ -36,15 +44,21 @@ The common structure of these results is instructive for the present study. In e
 
 #### Statistical practice in benchmark comparison.
 
-Bouthillier et al. model the benchmarking process itself and show that concluding one method beats another requires accounting for several sources of variance simultaneously, of which the choice of data sample is frequently dominant. Agarwal et al. make a closely related argument for reinforcement learning and recommend stratified bootstrap confidence intervals and performance profiles across tasks and runs in place of point comparisons. The task-paired design and the task-level bootstrap of Section <a href="#sec:power" data-reference-type="ref" data-reference="sec:power">7</a> follow their recommendations, applied to a setting where the unit of blocking is the benchmark task.
+Bouthillier et al. model the benchmarking process itself and show that concluding one method beats another requires accounting for several sources of variance simultaneously, of which the choice of data sample is frequently dominant. Agarwal et al. make a closely related argument for reinforcement learning and recommend stratified bootstrap confidence intervals and performance profiles across tasks and runs in place of point comparisons. The task-paired design and the task-level bootstrap of Section <a href="#sec:power" data-reference-type="ref" data-reference="sec:power">8</a> follow their recommendations, applied to a setting where the unit of blocking is the benchmark task.
 
 #### Sensitivity to prompt surface and to context.
 
-The length-matched placebo of Section <a href="#sec:controls" data-reference-type="ref" data-reference="sec:controls">8</a> is required by known results rather than adopted as good hygiene. Sclar et al. show that semantically equivalent reformattings of a prompt move accuracy by as much as tens of points on open models, and that the sensitivity persists as model size and shot count increase. Liu et al. show that where information sits inside a long context materially changes whether a model uses it. A skill is delivered as text placed into a context window, so both effects operate on it directly: loading any skill changes prompt surface and context occupancy at once. Without a control matched on length, an attribution cannot be separated from those two mechanisms.
+The length-matched placebo of Section <a href="#sec:controls" data-reference-type="ref" data-reference="sec:controls">9</a> is required by known results rather than adopted as good hygiene. Sclar et al. show that semantically equivalent reformattings of a prompt move accuracy by as much as tens of points on open models, and that the sensitivity persists as model size and shot count increase. Liu et al. show that where information sits inside a long context materially changes whether a model uses it. A skill is delivered as text placed into a context window, so both effects operate on it directly: loading any skill changes prompt surface and context occupancy at once. Without a control matched on length, an attribution cannot be separated from those two mechanisms.
 
 #### Attribution by Shapley value.
 
-The Shapley value was introduced to distribute the payoff of a cooperative game among its players. Its adoption in machine learning has been broad: SHAP applies it to feature attribution, and Data Shapley to valuing training examples. Both face the same computational obstacle that appears here—the number of coalitions grows exponentially—and both answer it with sampling. I take a different route, in Section <a href="#sec:design" data-reference-type="ref" data-reference="sec:design">5</a>, because the effect sizes expected here are small enough that a sampling estimator’s variance would dominate the quantity estimated. Covert et al. take the step closest to the present work by applying the construction not to individual predictions but to a global measure of predictive power, which is structurally what $`v`$ is here. The permutation-sampling estimator used for the validation pass of Section <a href="#sec:validation" data-reference-type="ref" data-reference="sec:validation">5.4</a> is that of Castro et al. . The generalisation to interactions among players is due to Grabisch and Roubens .
+The Shapley value was introduced to distribute the payoff of a cooperative game among its players. Its adoption in machine learning has been broad: SHAP applies it to feature attribution, and Data Shapley to valuing training examples. Both face the same computational obstacle that appears here—the number of coalitions grows exponentially—and both answer it with sampling. I take a different route, in Section <a href="#sec:design" data-reference-type="ref" data-reference="sec:design">6</a>, because the effect sizes expected here are small enough that a sampling estimator’s variance would dominate the quantity estimated. Covert et al. take the step closest to the present work by applying the construction not to individual predictions but to a global measure of predictive power, which is structurally what $`v`$ is here. The permutation-sampling estimator used for the validation pass of Section <a href="#sec:validation" data-reference-type="ref" data-reference="sec:validation">6.4</a> is that of Castro et al. . The generalisation to interactions among players is due to Grabisch and Roubens .
+
+#### Attribution applied to agent components.
+
+The construction this work uses has already been applied to agent systems, and the closest results should be stated plainly rather than left for a reader to discover. Yang et al. score the modules of an agentic workflow, such as planning and reflection, by their average contribution across configurations, across seven task families. Liu runs every one of the $`2^5 = 32`$ combinations of five scaffolding components on two benchmarks, computes the same scores without approximation, reports interaction measurements including one three-way term, and finds that switching everything on is worse than switching on a subset: a single-tool agent beat the fully equipped one by $`32\%`$ on one benchmark. Li et al. score the parts inside a single skill, using a padding scheme that holds prompt length constant so that content is separated from the cost of the context it occupies. Liu et al. attribute value to individual steps within a skill.
+
+Three things about that body of work bear on what remains to be done. Every one of these studies operates on four or five modules chosen by hand, or on the parts of one skill. At that size every combination can simply be run, so the problem of measuring a catalogue too large to enumerate does not arise, and neither does the question of how to reach it without discarding the components that work only in company. None of them records whether a component was actually used, because in their designs a component is wired in: if the memory module is enabled, it runs. A skill offered to an agent by a one-line descriptor may never be invoked at all, which makes the distinction between offered and used unavoidable here and absent there. And none of them takes a published catalogue as an input, so none can compare one author’s collection against another’s on a shared baseline, which is the comparison practitioners actually face.
 
 #### Design of experiments.
 
@@ -64,7 +78,7 @@ The concern motivating this study—that probabilistic systems are routinely rep
 
 Each choice below is forced by the failure of the choice before it.
 
-The quantity of interest is the *lift*, $`v(S) - v(\emptyset)`$: how much better an agent performs with a collection loaded than without. Every author reports some version of this number; the question is how it is produced. The obvious attribution—the ablation—fails, for the reason given in Section 1. Fixing it requires evaluating a skill across many contexts rather than one, so that its worth is the average of its marginal contributions over the coalitions it might join. That is a definition and not yet a method, since many averages satisfy it. Requiring the average to be *fair*, in a sense made precise in Section <a href="#sec:axioms" data-reference-type="ref" data-reference="sec:axioms">4</a>, fixes it uniquely. But the resulting estimator requires the value function on all $`2^N`$ subsets, which is unavailable at realistic catalogue sizes, so coverage rather than exactness must give: a balanced screen costing $`O(N)`$ runs identifies the skills worth pursuing and the exact computation runs over those alone. That screen must not discard the combination-only skills the study exists to find, which is guaranteed by Lemma <a href="#lem:balance" data-reference-type="ref" data-reference="lem:balance">11</a>. The exact stage then measures every interaction order at once, but a per-skill number discards them, so the interaction index is reported alongside; and a per-pair number does not scale into a decision, so the interaction matrix is decomposed into orthogonal areas by Lemma <a href="#lem:block" data-reference-type="ref" data-reference="lem:block">13</a>.
+The quantity of interest is the *lift*, $`v(S) - v(\emptyset)`$: how much better an agent performs with a collection loaded than without. Every author reports some version of this number; the question is how it is produced. The obvious attribution—the ablation—fails, for the reason given in Section 1. Fixing it requires evaluating a skill across many contexts rather than one, so that its worth is the average of its marginal contributions over the coalitions it might join. That is a definition and not yet a method, since many averages satisfy it. Requiring the average to be *fair*, in a sense made precise in Section <a href="#sec:axioms" data-reference-type="ref" data-reference="sec:axioms">5</a>, fixes it uniquely. But the resulting estimator requires the value function on all $`2^N`$ subsets, which is unavailable at realistic catalogue sizes, so coverage rather than exactness must give: a balanced screen costing $`O(N)`$ runs identifies the skills worth pursuing and the exact computation runs over those alone. That screen must not discard the combination-only skills the study exists to find, which is guaranteed by Lemma <a href="#lem:balance" data-reference-type="ref" data-reference="lem:balance">11</a>. The exact stage then measures every interaction order at once, but a per-skill number discards them, so the interaction index is reported alongside; and a per-pair number does not scale into a decision, so the interaction matrix is decomposed into orthogonal areas by Lemma <a href="#lem:block" data-reference-type="ref" data-reference="lem:block">13</a>.
 
 ## What is executed and what is computed
 
@@ -133,7 +147,7 @@ Since no ordering is privileged, treat them all alike.
 
 <div class="proof">
 
-*Proof.* Group the $`N!`$ orderings by the predecessor set they induce for $`i`$. Fix $`C \subseteq S \setminus \{i\}`$ with $`|C| = c`$. An ordering satisfies $`P_i^\pi = C`$ exactly when the $`c`$ elements of $`C`$ occupy the first $`c`$ positions in some order, $`i`$ occupies position $`c+1`$, and the remaining $`N - c - 1`$ skills follow in some order. There are $`c!`$ arrangements of the first group and $`(N-c-1)!`$ of the last, so exactly $`c!\,(N-c-1)!`$ orderings induce that predecessor set. Every ordering induces exactly one such set, so the groups partition the $`N!`$ orderings. Within a group, $`\Delta_i^\pi = v(C \cup \{i\}) - v(C)`$ is constant. Substituting into Definition <a href="#def:shapley" data-reference-type="ref" data-reference="def:shapley">3</a> gives the claim. ◻
+*Proof.* Group the $`N!`$ orderings by the predecessor set they induce for $`i`$. Fix $`C \subseteq S \setminus \{i\}`$ with $`|C| = c`$. An ordering satisfies $`P_i^\pi = C`$ when, and only when, the $`c`$ elements of $`C`$ occupy the first $`c`$ positions in some order, $`i`$ occupies position $`c+1`$, and the remaining $`N - c - 1`$ skills follow in some order. There are $`c!`$ arrangements of the first group and $`(N-c-1)!`$ of the last, so exactly $`c!\,(N-c-1)!`$ orderings induce that predecessor set. Every ordering induces exactly one such set, so the groups partition the $`N!`$ orderings. Within a group, $`\Delta_i^\pi = v(C \cup \{i\}) - v(C)`$ is constant. Substituting into Definition <a href="#def:shapley" data-reference-type="ref" data-reference="def:shapley">3</a> gives the claim. ◻
 
 </div>
 
@@ -179,7 +193,7 @@ This is the property a practitioner needs in order to justify not loading someth
 
 <div class="proof">
 
-*Proof.* Pair each ordering $`\pi`$ with the ordering $`\pi'`$ obtained by transposing $`i`$ and $`j`$. The map is an involution on the set of orderings, and $`\Delta_i^\pi = \Delta_j^{\pi'}`$ by hypothesis, so the two averages coincide. ◻
+*Proof.* Pair each ordering $`\pi`$ with the ordering $`\pi'`$ obtained by swapping the positions of $`i`$ and $`j`$. Applying the swap twice returns the original ordering, so the pairing matches every ordering with one other and covers all of them, and $`\Delta_i^\pi = \Delta_j^{\pi'}`$ by hypothesis, so the two averages coincide. ◻
 
 </div>
 
@@ -197,7 +211,7 @@ Symmetry matters here beyond fairness: one hypothesis of this work concerns auth
 
 </div>
 
-Proposition <a href="#prop:lin" data-reference-type="ref" data-reference="prop:lin">8</a> is not decoration. It is the machinery that makes the study affordable. Because $`\varphi`$ is linear in $`v`$, computing the attribution separately for each task and then averaging over tasks gives the same answer as attributing the task-averaged value function. That identity is what permits the task-paired analysis of Section <a href="#sec:power" data-reference-type="ref" data-reference="sec:power">7</a>, which removes the dominant source of variance. The explicit weights of Proposition <a href="#prop:weights" data-reference-type="ref" data-reference="prop:weights">4</a> are what the implementation computes. Had the construction not been linear, the blocking would not have been available and the required sample size would have been unreachable.
+Proposition <a href="#prop:lin" data-reference-type="ref" data-reference="prop:lin">8</a> is not decoration. It is the machinery that makes the study affordable. Because $`\varphi`$ is linear in $`v`$, computing the attribution separately for each task and then averaging over tasks gives the same answer as attributing the task-averaged value function. That identity is what permits the task-paired analysis of Section <a href="#sec:power" data-reference-type="ref" data-reference="sec:power">8</a>, which removes the dominant source of variance. The explicit weights of Proposition <a href="#prop:weights" data-reference-type="ref" data-reference="prop:weights">4</a> are what the implementation computes. Had the construction not been linear, the blocking would not have been available and the required sample size would have been unreachable.
 
 ## Why stop here
 
@@ -219,7 +233,7 @@ Theorem <a href="#thm:shapley" data-reference-type="ref" data-reference="thm:sh
 
 *Remark 10*. A known criticism of Shapley-based attribution in machine learning is that the value of a coalition is not measured but simulated. Absent features are marginalised out of a model trained on all of them, so $`v(C)`$ is evaluated at inputs the model never saw, and the resulting attributions depend on the imputation scheme as much as on the system.
 
-That criticism does not reach this design. Every coalition here is physically realised: the agent is executed with exactly the skills of $`C`$ available and no others, a property asserted by an automated hermeticity check rather than assumed. No value is imputed. Each $`v(C)`$ is an average of outcomes that were observed. The value function is interventional by construction, and the attributions are attributions of an intervention rather than of a model’s response to an input outside its training distribution.
+That criticism does not reach this design. Every coalition here is physically realised: the agent is executed with the skills of $`C`$ available and no others, which an automated check verifies for every run by confirming that the workspace contains the files of $`C`$ and no others. No value is imputed. Each $`v(C)`$ is an average of outcomes that were observed. The value function is what statisticians call *interventional*: it reports what happened when the world was changed, rather than what a model predicts would happen if it had been, and the attributions are attributions of an intervention rather than of a model’s response to an input unlike anything it was trained on.
 
 </div>
 
@@ -252,15 +266,15 @@ Substituting the model and using $`x_{rj}^2 = 1`$,
 ```
 where $`\overline{\,\cdot\,}`$ denotes the average over the $`n`$ runs. Two facts follow directly, and they are the whole of the matter.
 
-If every column is balanced and any two columns are orthogonal, then $`\overline{x_{\cdot j}} = 0`$ and $`\overline{x_{\cdot j}x_{\cdot l}} = 0`$ for $`l \neq j`$, so no other skill’s individual effect leaks into $`\hat\theta_j`$. If in addition $`\overline{x_{\cdot j}x_{\cdot a}x_{\cdot b}} = 0`$ for every pair $`\{a,b\}`$ not containing $`j`$, no pairwise effect leaks either, and $`\hat\theta_j`$ estimates $`\theta_j`$ alone. When that third average is instead $`\pm 1`$, which happens exactly when the column for $`j`$ coincides with the elementwise product of the columns for $`a`$ and $`b`$, the estimator returns $`\theta_j \pm \theta_{ab}`$ and the two are indistinguishable from any amount of data. This is what *aliasing* means: not a subtlety of interpretation but an identity between columns, which makes two different effects produce the same contrast.
+If every column is balanced and any two columns are orthogonal, then $`\overline{x_{\cdot j}} = 0`$ and $`\overline{x_{\cdot j}x_{\cdot l}} = 0`$ for $`l \neq j`$, so no other skill’s individual effect leaks into $`\hat\theta_j`$. If in addition $`\overline{x_{\cdot j}x_{\cdot a}x_{\cdot b}} = 0`$ for every pair $`\{a,b\}`$ not containing $`j`$, no pairwise effect leaks either, and $`\hat\theta_j`$ estimates $`\theta_j`$ alone. When that third average is instead $`\pm 1`$, which happens when, and only when, the column for $`j`$ coincides with the elementwise product of the columns for $`a`$ and $`b`$, the estimator returns $`\theta_j \pm \theta_{ab}`$ and the two are indistinguishable from any amount of data. This is what *aliasing* means: not a subtlety of interpretation but an identity between columns, which makes two different effects produce the same contrast.
 
 A design is said to have *Resolution III* when some main-effect column coincides with the product of two others, so main effects are aliased with pairwise effects; *Resolution IV* when no main-effect column coincides with a product of two others, but some product of two coincides with another product of two; and *Resolution V* when neither happens. The definitions are consequences of the display above rather than conventions.
 
 ## Screening
 
-The first stage uses a Resolution IV design, constructed as a Plackett–Burman design followed by its foldover, and requiring $`80`$ configurations at $`N = 39`$, or $`48`$ at $`N = 20`$. Skills whose estimated main effects are not distinguishable from zero are set aside; the number retained, $`k`$, is fixed in advance rather than chosen after inspecting the estimates.
+The first stage uses a Resolution IV design. It is built in two steps: a Plackett–Burman design, which is a standard recipe for laying out runs so that every skill is loaded in half of them and every pair of skills is loaded together in a quarter of them, and then a *foldover*, which appends a second copy of the whole design with every choice reversed. The result requires $`80`$ configurations at $`N = 39`$, or $`48`$ at $`N = 20`$. Skills whose estimated main effects are not distinguishable from zero are set aside; the number retained, $`k`$, is fixed in advance rather than chosen after inspecting the estimates.
 
-Resolution IV is chosen over the cheaper Resolution III, at exactly double the runs, for a reason that follows from the derivation above. Under Resolution III, $`\hat\theta_j`$ returns $`\theta_j \pm \theta_{ab}`$. A skill contributing only alongside one other is a skill for which $`\theta_j = 0`$ and $`\theta_{jb} \neq 0`$, which is precisely the case the aliased estimator cannot separate from an ordinary main effect, and cannot separate from zero either when the two terms cancel. Since such skills are the phenomenon this work exists to detect, halving the screening budget by aliasing them away would defeat the study. Resolution IV leaves pairwise effects aliased with one another, so it preserves rather than identifies them; identification happens in the exact stage.
+Resolution IV is chosen over the cheaper Resolution III, at exactly double the runs, for a reason that follows from the derivation above. Under Resolution III, $`\hat\theta_j`$ returns $`\theta_j \pm \theta_{ab}`$. A skill contributing only alongside one other is a skill for which $`\theta_j = 0`$ and $`\theta_{jb} \neq 0`$, which is the case the aliased estimator cannot separate from an ordinary main effect, and cannot separate from zero either when the two terms cancel. Since such skills are the phenomenon this work exists to detect, halving the screening budget by aliasing them away would defeat the study. Resolution IV leaves pairwise effects aliased with one another, so it preserves rather than identifies them; identification happens in the exact stage.
 
 What remains to be shown is that a combination-only skill survives the screen at all. Under Resolution IV its $`\theta_j`$ is zero by assumption, so it is not obvious that anything would flag it. The following establishes that something does, and quantifies how loudly.
 
@@ -296,13 +310,13 @@ A permutation-sampling estimator is run over the complete catalogue at reduced b
 
 ## Which combinations work
 
-The construction of Section <a href="#sec:axioms" data-reference-type="ref" data-reference="sec:axioms">4</a> answers what a skill is worth on average. It cannot answer whether skill $`1`$ is better paired with skill $`3`$ than with skill $`2`$, because Definition <a href="#def:shapley" data-reference-type="ref" data-reference="def:shapley">3</a> averages over coalitions and then discards them.
+The construction of Section <a href="#sec:axioms" data-reference-type="ref" data-reference="sec:axioms">5</a> answers what a skill is worth on average. It cannot answer whether skill $`1`$ is better paired with skill $`3`$ than with skill $`2`$, because Definition <a href="#def:shapley" data-reference-type="ref" data-reference="def:shapley">3</a> averages over coalitions and then discards them.
 
 The object that retains them is arrived at by repeating the same step twice. The marginal contribution of $`i`$ in context $`C`$ is the first difference $`v(C \cup \{i\}) - v(C)`$. Asking how that contribution changes when $`j`$ is also present is then a difference of differences,
 ``` math
 \Delta_{ij}(C) \;=\; \big[v(C\cup\{i,j\}) - v(C \cup \{j\})\big] \;-\; \big[v(C\cup\{i\}) - v(C)\big],
 ```
-which is the discrete analogue of a mixed second derivative and is symmetric in $`i`$ and $`j`$ on rearrangement. It is zero exactly when the worth of $`i`$ does not depend on whether $`j`$ is loaded. Averaging it over contexts, by the same reasoning that produced Definition <a href="#def:shapley" data-reference-type="ref" data-reference="def:shapley">3</a>, gives the interaction index, which for general subsets is due to Grabisch and Roubens : for $`T \subseteq S`$ with $`|T| = \tau`$,
+which is the discrete analogue of a mixed second derivative and is symmetric in $`i`$ and $`j`$ on rearrangement. It is zero when, and only when, the worth of $`i`$ does not depend on whether $`j`$ is loaded. Averaging it over contexts, by the same reasoning that produced Definition <a href="#def:shapley" data-reference-type="ref" data-reference="def:shapley">3</a>, gives the interaction index, which for general subsets is due to Grabisch and Roubens : for $`T \subseteq S`$ with $`|T| = \tau`$,
 ``` math
 I(T) \;=\; \sum_{C \subseteq S \setminus T} \frac{|C|!\,(N-|C|-\tau)!}{(N-\tau+1)!} \sum_{L \subseteq T} (-1)^{\tau - |L|}\, v(C \cup L).
 ```
@@ -310,7 +324,7 @@ At $`\tau = 1`$ this is exactly $`\varphi_i`$; at $`\tau = 2`$ it reduces to the
 
 ## From pairs to areas
 
-A catalogue of $`39`$ skills yields $`741`$ pairwise indices, which is a matrix rather than a finding. Because the pairwise interaction matrix $`I`$ is symmetric, its eigendecomposition yields axes that are orthogonal by construction and that live in skill space directly. The reading is algebraic rather than interpretive.
+A catalogue of $`39`$ skills yields $`741`$ pairwise indices, which is a matrix rather than a finding. Collect the pairwise measurements into a table $`I`$ with one row and one column per skill, entry $`I_{ij}`$ holding the interaction of that pair. Because the interaction of $`i`$ with $`j`$ equals the interaction of $`j`$ with $`i`$, the table is symmetric, and a symmetric table can be rewritten as a set of independent directions through the space of skills, each with a number attached saying how much of the table that direction accounts for. This rewriting is the *eigendecomposition*; the directions are its eigenvectors and the numbers its eigenvalues. The directions are mutually independent by construction, which is what makes them usable as separate areas. The reading is algebraic rather than interpretive.
 
 <div id="lem:block" class="lemma">
 
@@ -338,15 +352,15 @@ For each configuration size $`m`$, let $`B_m`$ be the best measured coalition of
 
 # Power
 
-The outcome is Bernoulli and the agent is stochastic; detecting a lift of a few percentage points under independent sampling would require thousands of runs per comparison. Three levers make the design feasible, in descending order of effect.
+Each run either solves its task or does not, so a single run carries very little information, and the agent does not behave identically twice on the same input. Detecting a lift of a few percentage points by simply running more independent trials would take thousands of runs per comparison. Three levers make the design feasible, in descending order of effect.
 
 The first and largest is *pairing on task*. Each comparison holds the task, the seed and the model fixed and varies only the configuration, and the analysis operates on within-task differences. This removes the variance due to task difficulty, which on repository-issue benchmarks dominates every other source: some tasks are solved by nearly every configuration and some by none. The identity that makes this available is the linearity of $`\varphi`$ in $`v`$ (Proposition <a href="#prop:lin" data-reference-type="ref" data-reference="prop:lin">8</a>): attributions computed per task and then averaged agree exactly with attributions of the task-averaged value function.
 
-The second is a *richer outcome than the binary verdict*. There are two co-primary outcomes, declared before any data exists, which is the only point at which declaring them is legitimate: tasks resolved, and tasks resolved per dollar. Cost is not a covariate. A skill buying two points of accuracy at triple the token cost is a different product from one buying the same two points for free, and to an organisation sizing a fleet it is very often the worse product. Attributions are computed against both, and a skill whose sign differs between them is reported as such rather than resolved in favour of the flattering reading. Secondary measures are the fraction of fail-to-pass tests satisfied, turns to solution, and whether the patch touched the reference files.
+The second is a *richer outcome than the binary verdict*. There are two co-primary outcomes, declared before any data exists, which is the only point at which declaring them is legitimate: tasks resolved, and tasks resolved per dollar. Cost is not a covariate. A skill buying two points of accuracy at triple the token cost is a different product from one buying the same two points for free, and to an organisation sizing a fleet it is very often the worse product. Attributions are computed against both, and a skill whose sign differs between them is reported as such rather than resolved in favour of the flattering reading. Secondary measures are the fraction of the tests that the reference fix was supposed to turn from failing to passing that the agent’s patch actually turned, turns to solution, and whether the patch touched the reference files.
 
 The third is *restriction to the informative band*. Tasks the baseline always solves and tasks it never solves carry no information about skills. A pilot classifies tasks by baseline difficulty and the study is restricted to the intermediate band; the cutoff is fixed in advance and the excluded tasks published.
 
-Confidence intervals are obtained by bootstrapping over tasks rather than over runs, preserving the pairing, in line with the practice urged by .
+Confidence intervals come from the bootstrap, which estimates how much a result would move under a different sample by repeatedly redrawing the sample it has, with replacement, and recomputing. The redrawing is done over *tasks* rather than over runs, because the task is the unit that could independently have come out otherwise; treating each run as independent would make the intervals look narrower than they are. This follows the practice urged by .
 
 # Controls
 
@@ -358,7 +372,7 @@ Loading a skill lengthens the prompt, and a skill could appear to work for no re
 
 #### Availability versus invocation.
 
-Skills are loaded by descriptor and the agent decides whether to invoke them. An uninvoked skill contributes nothing, and an experiment not distinguishing the two measures availability while claiming to measure effect. Traces record actual invocation, and both estimates are reported: intention-to-treat over assigned configurations, and effect among runs in which the skill was invoked. The gap is itself a finding.
+Skills are loaded by descriptor and the agent decides whether to invoke them. An uninvoked skill contributes nothing, and an experiment not distinguishing the two measures availability while claiming to measure effect. Traces record actual invocation, and both estimates are reported. The first counts every run in which the skill was made available, whether or not the agent reached for it; this is the convention clinical trials call *intention-to-treat*, and it answers the question a person installing a catalogue has, which is what happens if I add this. The second counts only the runs in which the skill was actually invoked, and answers what the skill does when used. The gap is itself a finding.
 
 #### Benchmark contamination.
 
@@ -382,15 +396,15 @@ H3 (combination)
 At least one skill shows a positive attribution under the coalition average while showing no distinguishable effect under leave-one-out ablation.
 
 H4 (invocation gap)  
-The rank correlation between intention-to-treat and effect-among-invoked attributions is substantially below unity, and at least one skill ranked highly on invocation ranks low on assignment because it rarely triggers.
+The two estimates of Section <a href="#sec:controls" data-reference-type="ref" data-reference="sec:controls">9</a>, one counting every run where a skill was available and one counting only runs where it was used, do not rank the skills in the same order, and at least one skill ranked highly on invocation ranks low on assignment because it rarely triggers.
 
-H6 (subadditivity)  
-Pairwise interaction indices within a published catalogue are predominantly negative. The pre-specified derived quantity is the minimal spanning subset: I predict it contains no more than half the surviving skills while retaining at least $`80\%`$ of the full catalogue’s lift, at materially lower context cost.
+H6 (subadditivity, a replication)  
+Pairwise interaction measurements within a published catalogue are predominantly negative. This is not offered as a novel prediction. Liu has already reported it for five scaffolding components on question-answering and arithmetic benchmarks, and the hypothesis here is that the finding survives a change of setting: an order of magnitude more components, drawn from catalogues that practitioners install rather than chosen by the experimenter, on software-repair tasks rather than reasoning tasks. The pre-specified derived quantity is the minimal spanning subset, which I predict contains no more than half the surviving skills while retaining at least $`80\%`$ of the full catalogue’s lift, at materially lower context cost.
 
 H5 (composition over provenance)  
 Between two catalogues matched on total token budget, the difference in total lift attributable to *which* skills are included exceeds the difference attributable to catalogue size or authorship.
 
-H2, H5 and H6 are the hypotheses whose confirmation would most change practice, and all three are uncomfortable for the field this work addresses. H6 in particular contradicts the implicit assumption under which these collections are assembled and adopted, that adding a skill is weakly beneficial. A null result on H1 through H6, with no attribution distinguishable from zero at achievable budget, is a publishable outcome and will be reported without reframing.
+H2 and H5 are the hypotheses whose confirmation would most change practice, and both are uncomfortable for the field this work addresses. H6 would be in that group had Liu not already established it; what it contributes here is evidence about whether the effect is a property of small module sets on reasoning benchmarks or a general property of stacking written instructions, which is a question the original result cannot settle on its own. All three contradict the assumption under which these collections are assembled and adopted, that adding a skill is weakly beneficial. A null result on H1 through H6, with no attribution distinguishable from zero at achievable budget, is a publishable outcome and will be reported without reframing.
 
 # Reproducibility
 
@@ -402,7 +416,7 @@ The instrument measures a catalogue under a fixed base agent, benchmark, model a
 
 # Conclusion
 
-The disagreement over which agent scaffolding works is an empirical question the field currently settles by assertion. I have specified an instrument that settles it by measurement: Shapley attribution over skill subsets for the per-skill question, uniquely determined by four requirements each of which is a substantive claim about catalogues, and reachable from a second, independent axiomatisation that does not assume linearity at all; the interaction index for the question of which combinations work; an eigendecomposition of the interaction matrix, and Lemma <a href="#lem:block" data-reference-type="ref" data-reference="lem:block">13</a>, for the question of which areas a catalogue covers and which subset spans them; a two-stage design that makes all of it computable, with Lemma <a href="#lem:balance" data-reference-type="ref" data-reference="lem:balance">11</a> establishing that the shortcut does not discard what the study exists to find; a task-paired analysis that makes it affordable; and controls, chief among them a length-matched placebo and an invocation trace, that make it attributable. The instrument takes the catalogue as an input, so that a collection published by any author can be measured on the same footing as any other, which is the condition under which the disagreement can be resolved rather than repeated.
+The disagreement over which agent scaffolding works is an empirical question the field largely settles by assertion. Where it has been settled by measurement, in the work discussed in Section 2, the measurement covered a handful of modules chosen by the experimenter. I have specified an instrument that settles it by measurement: Shapley attribution over skill subsets for the per-skill question, uniquely determined by four requirements each of which is a substantive claim about catalogues, and reachable from a second, independent axiomatisation that does not assume linearity at all; the interaction index for the question of which combinations work; an eigendecomposition of the interaction matrix, and Lemma <a href="#lem:block" data-reference-type="ref" data-reference="lem:block">13</a>, for the question of which areas a catalogue covers and which subset spans them; a two-stage design that makes all of it computable, with Lemma <a href="#lem:balance" data-reference-type="ref" data-reference="lem:balance">11</a> establishing that the shortcut does not discard what the study exists to find; a task-paired analysis that makes it affordable; and controls, chief among them a length-matched placebo and an invocation trace, that make it attributable. What is new here is not the idea of scoring a component by its average contribution, which has been applied to agent systems before, but doing it at the size of a catalogue that cannot be enumerated, on collections that practitioners install rather than modules assembled for the study, while distinguishing a skill that was offered from a skill that was used. The instrument takes the catalogue as an input, so that a collection published by any author can be measured on the same footing as any other, which is the condition under which the disagreement can be resolved rather than repeated.
 
 # Author contributions and tooling
 
@@ -436,6 +450,12 @@ C. E. Jimenez, J. Yang, A. Wettig, S. Yao, K. Pei, O. Press and K. Narasi
 
 I. E. Kumar, S. Venkatasubramanian, C. Scheidegger and S. Friedler. Problems with Shapley-value-based explanations as feature importance measures. *ICML*, 2020.
 
+T. Li, J. Liu, Q. Zhao, Y. Li, L. Wang, B. Shao, X. Liu and L. Shou. What Is a Skill Worth? Structure-Aware Shapley Valuation of Agent Skills. arXiv:2608.04562, 2026.
+
+C. Liu, Y. Zhang, Y. Zhong, B. Liu, H. Wang and S. Wei. SkillShapley: Boundary-Adaptive Shapley Valuation for Skill Step Attribution in LLM Agents. arXiv:2608.13173, 2026.
+
+M. Liu. More Is Not Always Better: Cross-Component Interference in LLM Agent Scaffolding. arXiv:2605.05716, 2026.
+
 N. F. Liu, K. Lin, J. Hewitt, A. Paranjape, M. Bevilacqua, F. Petroni and P. Liang. Lost in the Middle: How Language Models Use Long Contexts. *Transactions of the Association for Computational Linguistics*, 12:157–173, 2024.
 
 M. Lucic, K. Kurach, M. Michalski, S. Gelly and O. Bousquet. Are GANs Created Equal? A Large-Scale Study. *NeurIPS*, 2018, pp. 698–707.
@@ -455,6 +475,8 @@ M. Sclar, Y. Choi, Y. Tsvetkov and A. Suhr. Quantifying Language Models’ S
 L. S. Shapley. A Value for $`n`$-Person Games. In *Contributions to the Theory of Games, Volume II*, Princeton University Press, 1953.
 
 J. Suro. Semantic Tokens in Retrieval Augmented Generation. arXiv:2412.02563, 2024.
+
+Y. Yang, B. Huang, S. Qi et al. Understanding and Optimizing Agentic Workflows via Shapley Value. arXiv:2502.00510, 2025.
 
 J. Yang, C. E. Jimenez, A. Wettig, K. Lieret, S. Yao, K. Narasimhan and O. Press. SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering. *NeurIPS*, 2024.
 

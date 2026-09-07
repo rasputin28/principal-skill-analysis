@@ -32,6 +32,16 @@ against any other collection on a common baseline.
 
 ---
 
+## Terms
+
+**Skill**, one written instruction file an agent can load. **Catalogue**, a set of them pinned to a
+repository and revision. **Configuration**, the subset made available for one attempt at one task —
+possibly empty, possibly all of them. **Run**, one attempt: one agent, one task, one configuration.
+**Lift**, how much better the agent does with the whole catalogue loaded than with none of it.
+
+Everything else technical is defined where it first appears, here and in
+[METHODOLOGY.md](METHODOLOGY.md).
+
 ## The logic, in order
 
 Every step is forced by the failure of the one before it. Nothing here is decorative.
@@ -71,18 +81,25 @@ skill's main effect in runs that grow *linearly* in `N`; the exact computation t
 survivors, where `2^k` is small. The final estimate is not approximated — what is approximated is
 which skills reach it.
 
-**7. The screen must not kill the skills we are hunting.** Resolution III would: it aliases main
-effects with two-factor interactions, and a two-factor interaction *is* a skill that only works in
-company. Resolution IV, bought by folding the design over, separates them.
+**7. The screen must not kill the skills we are hunting.** Running only part of the possible
+configurations costs you something: some effects become impossible to tell apart no matter how much
+data you collect, because they produce the same pattern across the runs. That confusion is called
+*aliasing*, and which effects get confused is what *resolution* names. At Resolution III a skill's
+own effect is confused with the effect of a *pair* — and a skill that only works alongside one
+other **is** a pair effect, so it can cancel to zero and be dropped. Resolution IV, bought by
+running the design a second time with every choice reversed, keeps every skill's own effect clean.
+It costs double, and the skills this project exists to find are the ones the cheap option loses.
 
 **8. The exact stage measures every order at once.** At `k = 7` its 128 configurations are 1 empty
 baseline, 7 singles, **21 pairs**, 35 triples, 35 quadruples, 21 quintuples, 7 sextuples and the
 full set. Pairs are one size among many — the design is not pairwise.
 
-**9. A number per skill throws that away**, so PSA also reports the interaction index. **10. A
-number per pair does not scale** — 39 skills means 741 pairs — so the symmetric interaction matrix
-is decomposed into orthogonal areas, and one representative per area gives the minimal spanning
-subset. **11. All of it is noise-limited before it is budget-limited**, so comparisons are blocked
+**9. A number per skill throws that away**, so PSA also measures every pair: how much the worth of
+one skill changes depending on whether the other is loaded. **10. A number per pair does not
+scale** — 39 skills means 741 pairs, which is a spreadsheet, not a decision. Those pairwise numbers
+form a symmetric table, and a symmetric table can be rewritten as a handful of mutually independent
+directions through the space of skills. Those are the *areas*. Keeping the best skill in each area
+gives the minimal spanning subset. **11. All of it is noise-limited before it is budget-limited**, so comparisons are blocked
 on task. **12. And all of it is unattributable without calibration**, so the placebo and the
 invocation record run before anything of interest.
 
@@ -107,9 +124,11 @@ published catalogs are subadditive for exactly this reason.
 
 ### From 741 pairs to a decision
 
-Pairwise numbers do not scale into a decision — 39 skills means 741 pairs. The interaction matrix
-is symmetric, so its eigendecomposition gives orthogonal axes in skill space, and the most
-negative ones name the areas where a catalog has piled several skills onto one job:
+Pairwise numbers do not scale into a decision: 39 skills means 741 pairs. Collect them into a table
+with one row and column per skill. Since the interaction of A with B is the same as B with A, the
+table is symmetric, and a symmetric table can be rewritten as a set of mutually independent
+directions with a number attached to each (its *eigendecomposition*). The most negative of those
+directions name the areas where a catalogue has piled several skills onto one job:
 
 ```python
 structure = estimate.redundancy_axes(interaction, skills)
@@ -221,6 +240,37 @@ psa/report.py      report cards that state failed controls rather than omitting 
 paper.md           Stage 1 Registered Report
 docs/superpowers/specs/  design document
 ```
+
+## Prior work, and what is actually new here
+
+Scoring an agent's components by their average contribution across combinations is not new, and the
+closest results are stated here rather than left for a reader to find. [Yang et al.
+(2025)](https://arxiv.org/abs/2502.00510) score workflow modules this way across seven task
+families. [Liu (2026)](https://arxiv.org/abs/2605.05716) runs all 32 combinations of five
+scaffolding components, computes the same scores exactly, reports pairwise and three-way
+interactions, and finds that switching everything on is worse than switching on a subset. [Li et
+al. (2026)](https://arxiv.org/abs/2608.04562) score the parts inside a single skill, holding prompt
+length constant to separate content from context cost. [Liu et al.
+(2026)](https://arxiv.org/abs/2608.13173) attribute value to steps within a skill.
+
+Three gaps remain, and they are what this repository is for.
+
+**Scale.** All of that work covers four or five modules chosen by the experimenter, or the parts of
+one skill. At that size you can simply run every combination, so there is no problem of reaching a
+catalogue too large to enumerate without discarding the skills that only work in company. A real
+published catalogue has 39.
+
+**Offered versus used.** In those designs a component is wired in: if the memory module is on, it
+runs. A skill offered by a one-line descriptor may never be invoked. None of that work records
+which, so none of it can tell a bad skill from an unused one.
+
+**Catalogues as input.** None of it takes a published collection as an argument, so none can
+compare one author's collection against another's on a shared baseline, which is the comparison a
+practitioner actually faces.
+
+The subadditivity result is therefore a **replication** in this repository, not a discovery. Liu
+found it first, at five components on reasoning benchmarks; the open question is whether it holds
+at an order of magnitude more components, on code, in collections people install.
 
 ## Citing
 
