@@ -26,7 +26,7 @@ This document is a pre-registration. The design, the hypotheses and the analysis
 
 Four words are used throughout in a specific sense, and everything else technical is defined where it first appears.
 
-A *skill* is one written instruction file that an agent can load, of the kind published in the collections this work measures. A *catalogue* is a set of such files, identified by the repository and revision it came from. A *configuration* is the subset of a catalogue made available to the agent for one attempt at one task; it may be empty, a single skill, or all of them. A *run* is one such attempt: one agent, one task, one configuration.
+A *skill* is one written instruction file that an agent can load, of the kind published in the collections this work measures. A *catalogue* is a set of such files, identified by the repository and revision it came from. A *configuration* is the subset of a catalogue made available to the agent for one attempt at one task; it may be empty, a single skill, or all of them. A *run* is one such attempt: one agent, one task, one configuration. Every later section uses these four words as defined here.
 
 The quantity every measurement here refers back to is the *lift*: how much better the agent does with the whole catalogue loaded than with none of it.
 
@@ -52,7 +52,7 @@ The length-matched placebo of Section <a href="#sec:controls" data-reference-ty
 
 #### Attribution by Shapley value.
 
-The Shapley value was introduced to distribute the payoff of a cooperative game among its players. Its adoption in machine learning has been broad: SHAP applies it to feature attribution, and Data Shapley to valuing training examples. Both face the same computational obstacle that appears here—the number of coalitions grows exponentially—and both answer it with sampling. I take a different route, in Section <a href="#sec:design" data-reference-type="ref" data-reference="sec:design">6</a>, because the effect sizes expected here are small enough that a sampling estimator’s variance would dominate the quantity estimated. Covert et al. take the step closest to the present work by applying the construction not to individual predictions but to a global measure of predictive power, which is structurally what $`v`$ is here. The permutation-sampling estimator used for the validation pass of Section <a href="#sec:validation" data-reference-type="ref" data-reference="sec:validation">6.4</a> is that of Castro et al. . The generalisation to interactions among players is due to Grabisch and Roubens .
+The Shapley value was introduced to distribute the payoff of a cooperative game among its players. Its adoption in machine learning has been broad: SHAP applies it to feature attribution, and Data Shapley to valuing training examples. Both face the same computational obstacle that appears here—the number of coalitions grows exponentially—and both answer it with sampling. I take a different route, in Section <a href="#sec:design" data-reference-type="ref" data-reference="sec:design">6</a>, because the effect sizes expected here are small enough that a sampling estimator’s variance would dominate the quantity estimated. Covert et al. take the step closest to the present work by applying the construction not to individual predictions but to a global measure of predictive power, which is structurally what $`v`$ is here. The permutation-sampling estimator used for the validation pass of Section <a href="#sec:validation" data-reference-type="ref" data-reference="sec:validation">6.7</a> is that of Castro et al. . The generalisation to interactions among players is due to Grabisch and Roubens .
 
 #### Attribution applied to agent components.
 
@@ -78,7 +78,7 @@ The concern motivating this study—that probabilistic systems are routinely rep
 
 Each choice below is forced by the failure of the choice before it.
 
-The quantity of interest is the *lift*, $`v(S) - v(\emptyset)`$: how much better an agent performs with a collection loaded than without. Every author reports some version of this number; the question is how it is produced. The obvious attribution—the ablation—fails, for the reason given in Section 1. Fixing it requires evaluating a skill across many contexts rather than one, so that its worth is the average of its marginal contributions over the coalitions it might join. That is a definition and not yet a method, since many averages satisfy it. Requiring the average to be *fair*, in a sense made precise in Section <a href="#sec:axioms" data-reference-type="ref" data-reference="sec:axioms">5</a>, fixes it uniquely. But the resulting estimator requires the value function on all $`2^N`$ subsets, which is unavailable at realistic catalogue sizes, so coverage rather than exactness must give: a balanced screen costing $`O(N)`$ runs identifies the skills worth pursuing and the exact computation runs over those alone. That screen must not discard the combination-only skills the study exists to find, which is guaranteed by Lemma <a href="#lem:balance" data-reference-type="ref" data-reference="lem:balance">11</a>. The exact stage then measures every interaction order at once, but a per-skill number discards them, so the interaction index is reported alongside; and a per-pair number does not scale into a decision, so the interaction matrix is decomposed into orthogonal areas by Lemma <a href="#lem:block" data-reference-type="ref" data-reference="lem:block">13</a>.
+The quantity of interest is the *lift*, $`v(S) - v(\emptyset)`$: how much better an agent performs with a collection loaded than without. Every author reports some version of this number; the question is how it is produced. The obvious attribution—the ablation—fails, for the reason given in Section 1. Fixing it requires evaluating a skill across many contexts rather than one, so that its worth is the average of its marginal contributions over the coalitions it might join. That is a definition and not yet a method, since many averages satisfy it. Requiring the average to be *fair*, in a sense made precise in Section <a href="#sec:axioms" data-reference-type="ref" data-reference="sec:axioms">5</a>, fixes it uniquely. But the resulting estimator requires the value function on all $`2^N`$ subsets, which is unavailable at realistic catalogue sizes, so coverage rather than exactness must give: a balanced screen costing $`O(N)`$ runs identifies the skills worth pursuing and the exact computation runs over those alone. That screen must not discard the combination-only skills the study exists to find, which is guaranteed by Lemma <a href="#lem:balance" data-reference-type="ref" data-reference="lem:balance">16</a>. The exact stage then measures every interaction order at once, but a per-skill number discards them, so the interaction index is reported alongside; and a per-pair number does not scale into a decision, so the interaction matrix is decomposed into orthogonal areas by Lemma <a href="#lem:block" data-reference-type="ref" data-reference="lem:block">18</a>.
 
 ## What is executed and what is computed
 
@@ -243,68 +243,164 @@ The full factorial is unavailable: the subset space contains $`2^N`$ configurati
 
 <figure id="fig:funnel" data-latex-placement="t">
 
-<figcaption>The two-stage design. Screening cost grows linearly in <span class="math inline"><em>N</em></span> while the subset space grows exponentially; the exact computation is confined to the survivors, where it is affordable and where nothing is approximated.</figcaption>
+<figcaption>The primary route rewrites the value function in a basis where bounded interaction order makes the problem polynomial, and tests that assumption against held-out configurations. The screening route below is retained for budgets that will not stretch to <span class="math inline"><em>p</em></span> configurations, and has no comparable check.</figcaption>
 </figure>
 
-## Fractional designs, and what aliasing actually is
+## A change of basis that makes the problem polynomial
 
-The screening stage rests on a piece of standard machinery that is usually invoked by name. Since the soundness of the whole two-stage shortcut depends on it, it is derived here.
+Enumerating every configuration is unnecessary, and the reason is a change of basis rather than an approximation.
 
-Encode a configuration as a vector $`x \in \{-1,+1\}^N`$, with $`x_j = +1`$ when skill $`j`$ is loaded. A design is a set of $`n`$ such vectors, one per run, collected as a matrix $`X`$ with entries $`x_{rj}`$. Suppose the response is generated by
+<div id="def:mobius" class="definition">
+
+**Definition 11**. For a value function $`v`$ on $`2^S`$, define for each $`T \subseteq S`$
 ``` math
-y_r \;=\; \theta_0 \;+\; \sum_j \theta_j\, x_{rj} \;+\; \sum_{a<b} \theta_{ab}\, x_{ra}x_{rb} \;+\; \varepsilon_r ,
+a(T) \;=\; \sum_{L \subseteq T} (-1)^{|T| - |L|}\, v(L).
 ```
-so $`\theta_j`$ is the effect of skill $`j`$ on its own and $`\theta_{ab}`$ the effect of the pair beyond what the two contribute separately.
+The numbers $`a(T)`$ are the *dividends* of the game, after Harsanyi.
 
-Estimate $`\theta_j`$ in the natural way, by contrasting the runs where skill $`j`$ is present against those where it is absent:
-``` math
-\hat\theta_j \;=\; \frac{1}{n}\sum_{r=1}^{n} x_{rj}\, y_r .
-```
-Substituting the model and using $`x_{rj}^2 = 1`$,
-``` math
-\hat\theta_j \;=\; \theta_j \;+\; \theta_0\,\overline{x_{\cdot j}} \;+\; \sum_{l \neq j} \theta_l\, \overline{x_{\cdot j} x_{\cdot l}} \;+\; \sum_{a<b} \theta_{ab}\, \overline{x_{\cdot j} x_{\cdot a} x_{\cdot b}} \;+\; \bar\varepsilon,
-```
-where $`\overline{\,\cdot\,}`$ denotes the average over the $`n`$ runs. Two facts follow directly, and they are the whole of the matter.
+</div>
 
-If every column is balanced and any two columns are orthogonal, then $`\overline{x_{\cdot j}} = 0`$ and $`\overline{x_{\cdot j}x_{\cdot l}} = 0`$ for $`l \neq j`$, so no other skill’s individual effect leaks into $`\hat\theta_j`$. If in addition $`\overline{x_{\cdot j}x_{\cdot a}x_{\cdot b}} = 0`$ for every pair $`\{a,b\}`$ not containing $`j`$, no pairwise effect leaks either, and $`\hat\theta_j`$ estimates $`\theta_j`$ alone. When that third average is instead $`\pm 1`$, which happens when, and only when, the column for $`j`$ coincides with the elementwise product of the columns for $`a`$ and $`b`$, the estimator returns $`\theta_j \pm \theta_{ab}`$ and the two are indistinguishable from any amount of data. This is what *aliasing* means: not a subtlety of interpretation but an identity between columns, which makes two different effects produce the same contrast.
+<div id="thm:mobius" class="theorem">
 
-A design is said to have *Resolution III* when some main-effect column coincides with the product of two others, so main effects are aliased with pairwise effects; *Resolution IV* when no main-effect column coincides with a product of two others, but some product of two coincides with another product of two; and *Resolution V* when neither happens. The definitions are consequences of the display above rather than conventions.
-
-## Screening
-
-The first stage uses a Resolution IV design. It is built in two steps: a Plackett–Burman design, which is a standard recipe for laying out runs so that every skill is loaded in half of them and every pair of skills is loaded together in a quarter of them, and then a *foldover*, which appends a second copy of the whole design with every choice reversed. The result requires $`80`$ configurations at $`N = 39`$, or $`48`$ at $`N = 20`$. Skills whose estimated main effects are not distinguishable from zero are set aside; the number retained, $`k`$, is fixed in advance rather than chosen after inspecting the estimates.
-
-Resolution IV is chosen over the cheaper Resolution III, at exactly double the runs, for a reason that follows from the derivation above. Under Resolution III, $`\hat\theta_j`$ returns $`\theta_j \pm \theta_{ab}`$. A skill contributing only alongside one other is a skill for which $`\theta_j = 0`$ and $`\theta_{jb} \neq 0`$, which is the case the aliased estimator cannot separate from an ordinary main effect, and cannot separate from zero either when the two terms cancel. Since such skills are the phenomenon this work exists to detect, halving the screening budget by aliasing them away would defeat the study. Resolution IV leaves pairwise effects aliased with one another, so it preserves rather than identifies them; identification happens in the exact stage.
-
-What remains to be shown is that a combination-only skill survives the screen at all. Under Resolution IV its $`\theta_j`$ is zero by assumption, so it is not obvious that anything would flag it. The following establishes that something does, and quantifies how loudly.
-
-<div id="lem:balance" class="lemma">
-
-**Lemma 11** (Balance). *Let $`D`$ be a design in which the columns for skills $`i`$ and $`j`$ are balanced and mutually orthogonal, so that the four sign combinations of $`(i,j)`$ each occur in a quarter of the runs. Let the value function be a pure pairwise effect, $`v(C) = \beta \cdot \mathbf{1}\big[\{i,j\} \subseteq C\big]`$ with $`\beta \neq 0`$, so that neither skill does anything alone. Then the contrast estimator applied to column $`i`$ returns $`\beta/2`$.*
+**Theorem 12** (Representation). *For every $`C \subseteq S`$, $`\;v(C) = \sum_{T \subseteq C} a(T)`$, and the numbers $`a(T)`$ are the only ones with this property.*
 
 </div>
 
 <div class="proof">
 
-*Proof.* The contrast is $`\bar v_{i+} - \bar v_{i-}`$, the mean response over runs containing $`i`$ minus the mean over runs not containing $`i`$. Every run without $`i`$ has $`v = 0`$, so $`\bar v_{i-} = 0`$. Among runs containing $`i`$, balance and orthogonality give $`\Pr(j \in C \mid i \in C) = 1/2`$, and $`v = \beta`$ on exactly those runs and $`0`$ on the rest, so $`\bar v_{i+} = \beta/2`$. The difference is $`\beta/2`$. ◻
+*Proof.* Substitute Definition <a href="#def:mobius" data-reference-type="ref" data-reference="def:mobius">11</a> and exchange the order of summation:
+``` math
+\sum_{T \subseteq C} a(T) \;=\; \sum_{T \subseteq C}\ \sum_{L \subseteq T} (-1)^{|T|-|L|} v(L) \;=\; \sum_{L \subseteq C} v(L) \sum_{T \,:\, L \subseteq T \subseteq C} (-1)^{|T|-|L|}.
+```
+Fix $`L`$ and put $`m = |C \setminus L|`$. The sets $`T`$ with $`L \subseteq T \subseteq C`$ are obtained by adding to $`L`$ any of the $`m`$ remaining elements, so grouping them by how many were added gives
+``` math
+\sum_{T \,:\, L \subseteq T \subseteq C} (-1)^{|T|-|L|} \;=\; \sum_{j=0}^{m} \binom{m}{j} (-1)^{j} \;=\; (1-1)^{m},
+```
+by the binomial theorem. That is $`0`$ whenever $`m > 0`$ and $`1`$ when $`m = 0`$, which happens only for $`L = C`$. Every term therefore vanishes except $`v(C)`$, proving the identity.
+
+For uniqueness, note that both directions are linear maps on the $`2^{|S|}`$-dimensional space of functions on subsets, and the display above shows that the map $`a \mapsto v`$ inverts the map $`v \mapsto a`$. A linear map with a two-sided inverse is a bijection, so no second family of coefficients can represent the same $`v`$. ◻
+
+</div>
+
+The dividends have a direct reading. Since $`a(\{i\}) = v(\{i\}) - v(\emptyset)`$, a first-order dividend is what a skill is worth alone. Since $`a(\{i,j\}) = v(\{i,j\}) - v(\{i\}) - v(\{j\}) + v(\emptyset)`$, a second-order dividend is what the pair is worth beyond the two of them separately. Higher orders continue the pattern: $`a(T)`$ is the part of the value of $`T`$ that no proper subset of $`T`$ accounts for.
+
+<div id="thm:shapmobius" class="theorem">
+
+**Theorem 13** (The attribution in terms of dividends). *$`\displaystyle \varphi_i \;=\; \sum_{T \,\ni\, i} \frac{a(T)}{|T|}.`$*
+
+</div>
+
+<div class="proof">
+
+*Proof.* For $`T \neq \emptyset`$ let $`u_T`$ be the value function that is $`1`$ on configurations containing all of $`T`$ and $`0`$ otherwise. Theorem <a href="#thm:mobius" data-reference-type="ref" data-reference="thm:mobius">12</a> says $`v = a(\emptyset) + \sum_{T \neq \emptyset} a(T)\, u_T`$, and adding a constant to $`v`$ changes no marginal contribution, so by linearity (Proposition <a href="#prop:lin" data-reference-type="ref" data-reference="prop:lin">8</a>) it suffices to compute $`\varphi_i(u_T)`$ for a single $`T`$.
+
+Fix $`T`$ and an ordering $`\pi`$. By Definition <a href="#def:order" data-reference-type="ref" data-reference="def:order">1</a>, $`\Delta_i^{\pi} = u_T(P_i^\pi \cup \{i\}) - u_T(P_i^\pi)`$, which is $`1`$ when the first of the two configurations contains $`T`$ and the second does not, and $`0`$ otherwise. That happens when $`i \in T`$ and every other member of $`T`$ precedes $`i`$: in other words, when $`i`$ is the last member of $`T`$ to appear. If $`i \notin T`$, adding $`i`$ can never complete $`T`$, so every $`\Delta_i^\pi`$ is $`0`$ and $`\varphi_i(u_T) = 0`$.
+
+Suppose $`i \in T`$. Averaging over orderings, $`\varphi_i(u_T)`$ is the fraction of orderings in which $`i`$ is the last of the $`|T|`$ members of $`T`$. The restriction of a uniformly random ordering of $`S`$ to the members of $`T`$ is a uniformly random ordering of $`T`$, and each of its $`|T|`$ members is equally likely to be last, so that fraction is $`1/|T|`$.
+
+Summing over $`T`$ with the coefficients $`a(T)`$ gives the claim. ◻
+
+</div>
+
+Theorem <a href="#thm:shapmobius" data-reference-type="ref" data-reference="thm:shapmobius">13</a> says the attribution splits each dividend equally among the skills that earned it. It also re-derives additivity independently of Proposition <a href="#prop:eff" data-reference-type="ref" data-reference="prop:eff">5</a>: summing over $`i`$ gives $`\sum_i \varphi_i = \sum_{T \neq \emptyset} a(T) \sum_{i \in T} 1/|T| = \sum_{T \neq \emptyset} a(T)`$, and by Theorem <a href="#thm:mobius" data-reference-type="ref" data-reference="thm:mobius">12</a> that is $`v(S) - a(\emptyset) = v(S) - v(\emptyset)`$. Two independent routes to the same identity is a useful check on both.
+
+## What bounded interaction order buys
+
+<div id="cor:complexity" class="corollary">
+
+**Corollary 14** (Complexity). *Suppose $`a(T) = 0`$ for every $`T`$ with $`|T| > t`$. Then $`v`$ and all the attributions $`\varphi_i`$ are determined by
+``` math
+p \;=\; \sum_{j=0}^{t} \binom{N}{j}
+```
+numbers, which grows as $`O(N^t)`$.*
+
+</div>
+
+<div class="proof">
+
+*Proof.* Immediate from Theorems <a href="#thm:mobius" data-reference-type="ref" data-reference="thm:mobius">12</a> and <a href="#thm:shapmobius" data-reference-type="ref" data-reference="thm:shapmobius">13</a>: both expressions are sums over subsets, and every term with $`|T| > t`$ is zero, leaving only subsets of size at most $`t`$, of which there are $`p`$. ◻
+
+</div>
+
+Nothing in this change of basis reintroduces the difficulty Remark <a href="#rem:interventional" data-reference-type="ref" data-reference="rem:interventional">10</a> rules out: every $`v(L)`$ entering Definition <a href="#def:mobius" data-reference-type="ref" data-reference="def:mobius">11</a> is an average of runs that were executed, so the dividends are computed from measurements throughout.
+
+The saving is not marginal. At $`N = 39`$ and $`t = 2`$ the catalogue has $`2^{39} \approx 5.5 \times 10^{11}`$ configurations but only $`1 + 39 + 741 = 781`$ dividends, and $`780`$ of them enter the attributions. The problem stops being exponential and becomes polynomial.
+
+What has been paid for this is an assumption, not an approximation: within the assumption the attributions are exact. Everything therefore depends on whether the assumption holds, which is the subject of Section <a href="#sec:faithful" data-reference-type="ref" data-reference="sec:faithful">6.4</a>. It is not idle: the design-of-experiments literature calls the corresponding regularity the sparsity-of-effects principle , and it has been observed directly in language models, where interactions among input features are both sparse and hierarchical, with high-order terms appearing alongside their lower-order subsets .
+
+## How many runs bounded order requires
+
+Corollary <a href="#cor:complexity" data-reference-type="ref" data-reference="cor:complexity">14</a> counts unknowns. Recovering them requires a design that separates them, which is where the language of resolution earns its place.
+
+Encode a configuration (Section <a href="#sec:terms" data-reference-type="ref" data-reference="sec:terms">2</a>) as $`x \in \{-1,+1\}^N`$ with $`x_j = +1`$ when skill $`j`$ is loaded, and for $`A \subseteq S`$ write $`x_A = \prod_{j \in A} x_j`$, with $`x_\emptyset = 1`$. Every value function on configurations can be written as $`\sum_{A} \theta_A\, x_A`$, and the assumption of Corollary <a href="#cor:complexity" data-reference-type="ref" data-reference="cor:complexity">14</a> is that $`\theta_A = 0`$ for $`|A| > t`$. This is the same statement in a different coding; the two sets of coefficients are related by an invertible change of variables.
+
+Estimate $`\theta_A`$ by the contrast $`\hat\theta_A = \frac{1}{n}\sum_{r} x_{rA}\, y_r`$. Two effect terms are indistinguishable when their columns coincide, and since every entry is $`\pm 1`$ and therefore squares to one,
+``` math
+x_A x_B \;=\; x_{A \,\triangle\, B},
+```
+where $`A \triangle B`$ is the set of skills in one of $`A`$ and $`B`$ but not both. So the columns of $`A`$ and $`B`$ coincide precisely when $`x_{A \triangle B}`$ is the all-ones column. Call a non-empty set $`W`$ with $`x_W`$ all-ones a *defining word* of the design, and call the *resolution* $`R`$ the size of its shortest defining word. This is where the numeral in “Resolution IV” comes from: it counts skills in the shortest confusion the design admits.
+
+<div id="prop:resolution" class="proposition">
+
+**Proposition 15** (Required resolution). *All effects of order at most $`t`$ are separately estimable if and only if the design has resolution $`R \ge 2t+1`$.*
+
+</div>
+
+<div class="proof">
+
+*Proof.* Two effects $`A \neq B`$ with $`|A|,|B| \le t`$ are confounded when $`A \triangle B`$ is a defining word. Since $`A \triangle B`$ is non-empty and $`|A \triangle B| \le |A| + |B| \le 2t`$, a design with a defining word of length at most $`2t`$ admits such a pair, and conversely if the shortest defining word has length at least $`2t+1`$ then no $`A \triangle B`$ of size at most $`2t`$ can be one, so no two effects of order at most $`t`$ are confounded. ◻
+
+</div>
+
+Proposition <a href="#prop:resolution" data-reference-type="ref" data-reference="prop:resolution">15</a> makes the design choice a consequence rather than a preference. Measuring every pair, $`t = 2`$, requires resolution $`5`$. Measuring only which skills matter, $`t = 1`$, requires resolution $`3`$; separating those main effects from pairs, so that a skill working only in company is not lost, requires resolution $`4`$, which is the case discussed in Section <a href="#sec:screen" data-reference-type="ref" data-reference="sec:screen">6.6</a>. A design must also have at least $`p`$ runs, since $`p`$ unknowns cannot be recovered from fewer equations.
+
+## Testing the assumption instead of trusting it
+
+Bounded order is the one substantive assumption in this design, so it is measured rather than asserted.
+
+Configurations are split before fitting into an estimation set and a held-out set, the split fixed by seed in the pre-registration. The order-$`t`$ coefficients are fitted on the estimation set alone, and used to predict the value of each held-out configuration, which the fit never saw. Two numbers are then compared: the mean squared prediction error on the held-out configurations, and the variance of repeated runs of the same configuration, which is the error floor no model can go below.
+
+If the assumption holds, held-out error is at the level of that floor: the order-$`t`$ model is describing everything except noise. If held-out error stands clearly above the floor, interactions above order $`t`$ carry real signal, the assumption is wrong, and the reported attributions are incomplete. The threshold at which that verdict is declared is fixed in the pre-registration, and a failed test is reported as a failed test. The quantity is what calls faithfulness, used there for the same purpose.
+
+This replaces an act of faith with a measurement, and it is a strictly better position than the two-stage design of Section <a href="#sec:screen" data-reference-type="ref" data-reference="sec:screen">6.6</a> occupies, where a discarded skill is gone with no comparable check.
+
+## When even polynomial is too many
+
+At $`N = 39`$ and $`t = 2`$, $`p = 781`$ is affordable. It grows quickly: $`t = 3`$ gives $`p = 10{,}140`$. Two results bound the cost further, and both are cited rather than proved here.
+
+If, in addition to being of low order, the coefficients are *sparse*, with only $`k`$ of them non-zero, then the function can be recovered from $`O(k\,d \log N)`$ evaluations, which is logarithmic in the size of the catalogue, and this sample complexity is information-theoretically optimal . The approach has been carried to language models directly: recovers interaction structure over inputs of around a thousand features using a sparse transform with a decoding algorithm, where methods of the kind used in Section <a href="#sec:axioms" data-reference-type="ref" data-reference="sec:axioms">5</a> had reached about twenty, and exploits the observed hierarchy among interactions to cut the number of evaluations by a further order of magnitude.
+
+PSA does not require these methods at the catalogue sizes considered here, and does not use them in the pre-registered analysis. They are recorded because they set the ceiling: the exponential barrier is not a fact about attribution, it is a fact about attribution computed by enumeration.
+
+## Screening, as the budget fallback
+
+The route above covers the whole catalogue and tests its own assumption, which makes it the primary design. A cheaper route remains available when the budget will not stretch to $`p`$ configurations, and it is retained for that case with its weakness stated.
+
+The fallback runs a resolution-$`4`$ design, built as a Plackett–Burman design, which is a standard recipe for laying out runs so every skill is loaded in half of them and every pair together in a quarter, followed by a *foldover*, a second copy of the design with every choice reversed. That costs $`80`$ configurations at $`N = 39`$ against $`781`$, and by Proposition <a href="#prop:resolution" data-reference-type="ref" data-reference="prop:resolution">15</a> it estimates main effects free of confusion with pairs, though pairs remain confounded with each other. The skills whose main effects are distinguishable from zero, $`k`$ of them with $`k`$ fixed in advance, then receive the complete factorial, $`2^k`$ configurations, within which every order is measured without further assumption.
+
+The weakness is that a skill dropped at the screening stage is dropped for good, and the analysis has no way to notice. Two results bound the damage. Lemma <a href="#lem:balance" data-reference-type="ref" data-reference="lem:balance">16</a> shows that a skill whose entire value is a pairwise effect still moves its own main effect, so it is visible to the screen at all; Corollary <a href="#cor:screen" data-reference-type="ref" data-reference="cor:screen">17</a> shows it is visible at half strength, so the retention threshold must be set accordingly. Neither amounts to the held-out check of Section <a href="#sec:faithful" data-reference-type="ref" data-reference="sec:faithful">6.4</a>, which is why this route is the fallback and not the plan.
+
+<div id="lem:balance" class="lemma">
+
+**Lemma 16** (Balance). *Let the columns for skills $`i`$ and $`j`$ be balanced and mutually orthogonal, so the four sign combinations of $`(i,j)`$ each occur in a quarter of the runs. Let the value function be a pure pairwise effect, $`v(C) = \beta \cdot \mathbf{1}[\{i,j\} \subseteq C]`$ with $`\beta \neq 0`$, so neither skill does anything alone. Then the contrast estimator applied to column $`i`$ returns $`\beta/2`$.*
+
+</div>
+
+<div class="proof">
+
+*Proof.* The contrast is $`\bar v_{i+} - \bar v_{i-}`$, the mean response over runs containing $`i`$ minus the mean over runs not containing $`i`$. Every run without $`i`$ has $`v = 0`$, so $`\bar v_{i-} = 0`$. Among runs containing $`i`$, balance and orthogonality give $`\Pr(j \in C \mid i \in C) = 1/2`$, and $`v = \beta`$ on those runs and $`0`$ on the rest, so $`\bar v_{i+} = \beta/2`$. ◻
 
 </div>
 
 <div id="cor:screen" class="corollary">
 
-**Corollary 12**. *A skill whose entire value is a pairwise effect is retained whenever the retention threshold lies below $`\beta/2`$. It is detected at half the magnitude of an additive skill worth the same $`\beta`$, so the screen is a factor of two less sensitive to combination-only skills than to additive ones.*
+**Corollary 17**. *Such a skill is retained whenever the retention threshold lies below $`\beta/2`$, and is seen at half the magnitude of an additive skill worth the same $`\beta`$. The screen is therefore a factor of two less sensitive to combination-only skills than to additive ones, and $`k`$ must be set generously to compensate.*
 
 </div>
 
-Corollary <a href="#cor:screen" data-reference-type="ref" data-reference="cor:screen">12</a> carries a design consequence, recorded here rather than discovered later: $`k`$ must be set generously, because the skills this study most wants to find are the ones the screen sees at half strength.
+## Validation
 
-## Exact computation
-
-The second stage runs the complete factorial over the $`k`$ survivors (128 configurations at $`k=7`$) and computes attributions exactly: no sampling estimator, no surrogate model, no approximation whose bias a reader must take on faith, and no reliance on the imputation that Remark <a href="#rem:interventional" data-reference-type="ref" data-reference="rem:interventional">10</a> rules out. Interactions of every order are captured by construction. The $`2^k`$ configurations comprise every group size at once; at $`k=7`$ they are one empty baseline, $`7`$ single skills, $`21`$ pairs, $`35`$ triples, $`35`$ quadruples, $`21`$ quintuples, $`7`$ sextuples and the full set. Pairs are one size among many.
-
-## Validation of the screen
-
-A permutation-sampling estimator is run over the complete catalogue at reduced budget, solely to check that no discarded skill carries a large attribution. Should one appear, it is reported as a failure of the screening design rather than silently corrected.
+Whichever route is used, a sampling estimator is run over the complete catalogue at reduced budget as an independent check: under the primary route it tests the order assumption from a second direction, and under the fallback it tests whether a discarded skill carries a large attribution after all. A disagreement is reported as a disagreement, not reconciled.
 
 # Interaction, and the Structure of a Catalogue
 
@@ -322,13 +418,17 @@ I(T) \;=\; \sum_{C \subseteq S \setminus T} \frac{|C|!\,(N-|C|-\tau)!}{(N-\tau+1
 ```
 At $`\tau = 1`$ this is exactly $`\varphi_i`$; at $`\tau = 2`$ it reduces to the average of $`v(C{+}ij) - v(C{+}i) - v(C{+}j) + v(C)`$. A positive index is synergy; a negative index is redundancy, two skills doing the same job so that loading both spends context to buy what one already bought.
 
+One caution is owed here, because it does not carry over from Section <a href="#sec:axioms" data-reference-type="ref" data-reference="sec:axioms">5</a>. The attribution to a single skill is pinned down uniquely by the four properties proved there. *The extension to pairs is not.* Tsai et al. show that the natural axioms, once extended to interactions, no longer single out one index, and that several defensible indices satisfy them; they obtain a unique one by a different route, requiring the coefficients to give the most faithful polynomial approximation of the value function. This work reports the Grabisch–Roubens index because it is the one that arises from repeating the construction of Section <a href="#sec:axioms" data-reference-type="ref" data-reference="sec:axioms">5</a>, and because under the bounded-order assumption of Section <a href="#sec:mobius" data-reference-type="ref" data-reference="sec:mobius">6.1</a> it stands in a simple relation to the dividends. But the choice is a choice, and it is recorded as one. Where a conclusion would change under an alternative index, that is reported rather than resolved in favour of the index used.
+
+Under bounded order the pairwise index has a direct reading in terms of Definition <a href="#def:mobius" data-reference-type="ref" data-reference="def:mobius">11</a>: when no dividend above order two is non-zero, the interaction of a pair is its dividend $`a(\{i,j\})`$, so the second-order dividends *are* the pairwise structure, and no separate estimation is required.
+
 ## From pairs to areas
 
 A catalogue of $`39`$ skills yields $`741`$ pairwise indices, which is a matrix rather than a finding. Collect the pairwise measurements into a table $`I`$ with one row and one column per skill, entry $`I_{ij}`$ holding the interaction of that pair. Because the interaction of $`i`$ with $`j`$ equals the interaction of $`j`$ with $`i`$, the table is symmetric, and a symmetric table can be rewritten as a set of independent directions through the space of skills, each with a number attached saying how much of the table that direction accounts for. This rewriting is the *eigendecomposition*; the directions are its eigenvectors and the numbers its eigenvalues. The directions are mutually independent by construction, which is what makes them usable as separate areas. The reading is algebraic rather than interpretive.
 
 <div id="lem:block" class="lemma">
 
-**Lemma 13** (Redundancy block). *Let $`B \subseteq S`$ with $`|B| = m \ge 2`$, and suppose $`I_{ij} = -c`$ for all distinct $`i,j \in B`$ with $`c > 0`$, and $`I_{ij} = 0`$ for every other pair. Then $`I`$ restricted to $`B`$ has eigenvalue $`-c(m-1)`$ with eigenvector $`m^{-1/2}\mathbf{1}_B`$, and eigenvalue $`+c`$ with multiplicity $`m-1`$ on the orthogonal complement of $`\mathbf{1}_B`$ within $`B`$.*
+**Lemma 18** (Redundancy block). *Let $`B \subseteq S`$ with $`|B| = m \ge 2`$, and suppose $`I_{ij} = -c`$ for all distinct $`i,j \in B`$ with $`c > 0`$, and $`I_{ij} = 0`$ for every other pair. Then $`I`$ restricted to $`B`$ has eigenvalue $`-c(m-1)`$ with eigenvector $`m^{-1/2}\mathbf{1}_B`$, and eigenvalue $`+c`$ with multiplicity $`m-1`$ on the orthogonal complement of $`\mathbf{1}_B`$ within $`B`$.*
 
 </div>
 
@@ -338,11 +438,11 @@ A catalogue of $`39`$ skills yields $`741`$ pairwise indices, which is a matrix 
 
 </div>
 
-Lemma <a href="#lem:block" data-reference-type="ref" data-reference="lem:block">13</a> is what converts the eigendecomposition into a reading rather than an interpretation: a group of mutually redundant skills of *any* size produces a single, most-negative eigenvalue whose eigenvector is uniform over the group, naming its members with a common sign. Retaining the best-attributed representative of each such area, together with every skill overlapping nothing, yields the *minimal spanning subset*: the catalogue’s coverage at a fraction of its context cost. This is the quantity an organisation sizing a fleet of agents acts upon, and it is why the per-skill ranking is insufficient alone. A ranking says which skills are worth the most, not which of them are worth the same thing twice.
+Lemma <a href="#lem:block" data-reference-type="ref" data-reference="lem:block">18</a> is what converts the eigendecomposition into a reading rather than an interpretation: a group of mutually redundant skills of *any* size produces a single, most-negative eigenvalue whose eigenvector is uniform over the group, naming its members with a common sign. Retaining the best-attributed representative of each such area, together with every skill overlapping nothing, yields the *minimal spanning subset*: the catalogue’s coverage at a fraction of its context cost. This is the quantity an organisation sizing a fleet of agents acts upon, and it is why the per-skill ranking is insufficient alone. A ranking says which skills are worth the most, not which of them are worth the same thing twice.
 
 <div class="remark">
 
-*Remark 14*. Orthogonality here is imposed by the decomposition, not discovered in the data. An eigendecomposition returns orthogonal axes whether or not the underlying capability structure is orthogonal. The claim licensed is that these are the orthogonal directions best accounting for the observed redundancy, never that the areas themselves are orthogonal.
+*Remark 19*. Orthogonality here is imposed by the decomposition, not discovered in the data. An eigendecomposition returns orthogonal axes whether or not the underlying capability structure is orthogonal. The claim licensed is that these are the orthogonal directions best accounting for the observed redundancy, never that the areas themselves are orthogonal.
 
 </div>
 
@@ -412,11 +512,11 @@ The analysis stage is separated from execution by a published run ledger. Every 
 
 # Limitations
 
-The instrument measures a catalogue under a fixed base agent, benchmark, model and harness, and attributions are conditional on all four. It does not establish that a skill is well written, only that its presence changed outcomes under these conditions. It cannot distinguish a skill that improves the agent’s reasoning from one that merely constrains its output format into better alignment with the grader. The orthogonality of the areas of Lemma <a href="#lem:block" data-reference-type="ref" data-reference="lem:block">13</a> is a property of the decomposition rather than a finding about capabilities, and those areas are recovered only among the skills surviving screening. Corollary <a href="#cor:screen" data-reference-type="ref" data-reference="cor:screen">12</a> bounds but does not eliminate the risk that a combination-only skill is screened out, and the two-stage design cannot see a skill whose contribution requires three or more partners simultaneously. Finally, cost scales with the product of configurations, tasks and repetitions, and is the binding constraint on how many catalogues can be measured.
+The instrument measures a catalogue under a fixed base agent, benchmark, model and harness, and attributions are conditional on all four. It does not establish that a skill is well written, only that its presence changed outcomes under these conditions. It cannot distinguish a skill that improves the agent’s reasoning from one that merely constrains its output format into better alignment with the grader. The orthogonality of the areas of Lemma <a href="#lem:block" data-reference-type="ref" data-reference="lem:block">18</a> is a property of the decomposition rather than a finding about capabilities, and those areas are recovered only among the skills surviving screening. The primary route rests on one substantive assumption, that dividends vanish above order $`t`$; Section <a href="#sec:faithful" data-reference-type="ref" data-reference="sec:faithful">6.4</a> tests it but a test can only fail to reject, and a small effect at order $`t+1`$ may sit below the noise floor and go unreported. Under the fallback route, Corollary <a href="#cor:screen" data-reference-type="ref" data-reference="cor:screen">17</a> bounds but does not eliminate the risk that a combination-only skill is screened out, and that route cannot see a skill whose contribution requires three or more partners at once. The extension of the attribution to pairs is not uniquely determined by the axioms , so the pairwise numbers and everything built on them, including the areas and the spanning subset, are conditional on that choice. Finally, cost scales with the product of configurations, tasks and repetitions, and is the binding constraint on how many catalogues can be measured.
 
 # Conclusion
 
-The disagreement over which agent scaffolding works is an empirical question the field largely settles by assertion. Where it has been settled by measurement, in the work discussed in Section 2, the measurement covered a handful of modules chosen by the experimenter. I have specified an instrument that settles it by measurement: Shapley attribution over skill subsets for the per-skill question, uniquely determined by four requirements each of which is a substantive claim about catalogues, and reachable from a second, independent axiomatisation that does not assume linearity at all; the interaction index for the question of which combinations work; an eigendecomposition of the interaction matrix, and Lemma <a href="#lem:block" data-reference-type="ref" data-reference="lem:block">13</a>, for the question of which areas a catalogue covers and which subset spans them; a two-stage design that makes all of it computable, with Lemma <a href="#lem:balance" data-reference-type="ref" data-reference="lem:balance">11</a> establishing that the shortcut does not discard what the study exists to find; a task-paired analysis that makes it affordable; and controls, chief among them a length-matched placebo and an invocation trace, that make it attributable. What is new here is not the idea of scoring a component by its average contribution, which has been applied to agent systems before, but doing it at the size of a catalogue that cannot be enumerated, on collections that practitioners install rather than modules assembled for the study, while distinguishing a skill that was offered from a skill that was used. The instrument takes the catalogue as an input, so that a collection published by any author can be measured on the same footing as any other, which is the condition under which the disagreement can be resolved rather than repeated.
+The disagreement over which agent scaffolding works is an empirical question the field largely settles by assertion. Where it has been settled by measurement, in the work discussed in Section 2, the measurement covered a handful of modules chosen by the experimenter. I have specified an instrument that settles it by measurement: Shapley attribution over skill subsets for the per-skill question, uniquely determined by four requirements each of which is a substantive claim about catalogues, and reachable from a second, independent axiomatisation that does not assume linearity at all; the interaction index for the question of which combinations work; an eigendecomposition of the interaction matrix, and Lemma <a href="#lem:block" data-reference-type="ref" data-reference="lem:block">18</a>, for the question of which areas a catalogue covers and which subset spans them; a two-stage design that makes all of it computable, with Lemma <a href="#lem:balance" data-reference-type="ref" data-reference="lem:balance">16</a> establishing that the shortcut does not discard what the study exists to find; a task-paired analysis that makes it affordable; and controls, chief among them a length-matched placebo and an invocation trace, that make it attributable. What is new here is not the idea of scoring a component by its average contribution, which has been applied to agent systems before, but doing it at the size of a catalogue that cannot be enumerated, on collections that practitioners install rather than modules assembled for the study, while distinguishing a skill that was offered from a skill that was used. The instrument takes the catalogue as an input, so that a collection published by any author can be measured on the same footing as any other, which is the condition under which the disagreement can be resolved rather than repeated.
 
 # Author contributions and tooling
 
@@ -430,11 +530,15 @@ Disclosing this is not a formality. A study whose subject is the measurement of 
 
 R. Agarwal, M. Schwarzer, P. S. Castro, A. Courville and M. G. Bellemare. Deep Reinforcement Learning at the Edge of the Statistical Precipice. *NeurIPS*, 2021, pp. 29304–29320.
 
+A. Amrollahi, A. Zandieh, M. Kapralov and A. Krause. Efficiently Learning Fourier Sparse Set Functions. *NeurIPS*, 2019.
+
 G. E. P. Box, J. S. Hunter and W. G. Hunter. *Statistics for Experimenters: Design, Innovation, and Discovery*, 2nd edition. Wiley, 2005.
 
 X. Bouthillier, P. Delaunay, M. Bronzi, A. Trofimov, B. Nichyporuk, J. Szeto, N. Mohammadi Sepahvand, E. Raff, K. Madan, V. Voleti, S. Ebrahimi Kahou, V. Michalski, T. Arbel, C. Pal, G. Varoquaux and P. Vincent. Accounting for Variance in Machine Learning Benchmarks. *Proceedings of Machine Learning and Systems (MLSys)*, 2021.
 
 J. Castro, D. Gómez and J. Tejada. Polynomial calculation of the Shapley value based on sampling. *Computers and Operations Research*, 36(5):1726–1730, 2009.
+
+L. Butler, A. Agarwal et al. ProxySPEX: Inference-Efficient Interpretability via Sparse Feature Interactions in LLMs. arXiv:2505.17495, 2025.
 
 C. D. Chambers. Registered Reports: A new publishing initiative at Cortex. *Cortex*, 49(3):609–610, 2013.
 
@@ -449,6 +553,8 @@ M. Grabisch and M. Roubens. An axiomatic approach to the concept of interactio
 C. E. Jimenez, J. Yang, A. Wettig, S. Yao, K. Pei, O. Press and K. Narasimhan. SWE-bench: Can Language Models Resolve Real-World GitHub Issues? *ICLR*, 2024.
 
 I. E. Kumar, S. Venkatasubramanian, C. Scheidegger and S. Friedler. Problems with Shapley-value-based explanations as feature importance measures. *ICML*, 2020.
+
+J. S. Kang, L. Butler, A. Agarwal et al. SPEX: Scaling Feature Interaction Explanations for LLMs. *ICML*, 2025.
 
 T. Li, J. Liu, Q. Zhao, Y. Li, L. Wang, B. Shao, X. Liu and L. Shou. What Is a Skill Worth? Structure-Aware Shapley Valuation of Agent Skills. arXiv:2608.04562, 2026.
 
@@ -465,6 +571,8 @@ S. M. Lundberg and S.-I. Lee. A Unified Approach to Interpreting Model Predicti
 G. Melis, C. Dyer and P. Blunsom. On the State of the Art of Evaluation in Neural Language Models. *ICLR*, 2018.
 
 K. Musgrave, S. Belongie and S.-N. Lim. A Metric Learning Reality Check. *ECCV*, 2020, pp. 681–699.
+
+C.-P. Tsai, C.-K. Yeh and P. Ravikumar. Faith-Shap: The Faithful Shapley Interaction Index. *Journal of Machine Learning Research*, 24(94):1–42, 2023.
 
 OpenAI. Introducing SWE-bench Verified, 2024.
 

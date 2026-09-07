@@ -76,12 +76,18 @@ independent routes to the same place is better evidence than either alone.
 switch: each skill loaded or not, two states per skill. At 39 skills that is 5.5 × 10¹¹
 configurations.
 
-**6. So screen first, then compute exactly.** A balanced fractional factorial estimates every
-skill's main effect in runs that grow *linearly* in `N`; the exact computation then runs over the
-survivors, where `2^k` is small. The final estimate is not approximated — what is approximated is
-which skills reach it.
+**6. The exponential barrier belongs to enumeration, not to the problem.** Rewrite the value
+function in terms of *dividends* — the part of a combination's worth that no smaller combination
+accounts for. That rewriting is exact and unique, and a skill's score turns out to be the sum of
+the dividends of every combination containing it, split equally among its members. So **if no
+combination bigger than `t` skills has a non-zero dividend, the whole thing is determined by
+`O(N^t)` numbers: 781 instead of 5.5 × 10¹¹ for pairs at 39 skills.** Nothing is approximated —
+inside the assumption the answer is exact. What is paid is the assumption, and the assumption gets
+tested against configurations held out of the fit rather than trusted.
 
-**7. The screen must not kill the skills we are hunting.** Running only part of the possible
+**7. How many runs that takes has a proved answer:** a design recovers every effect up to order `t`
+if and only if its resolution is at least `2t+1`. All pairs means resolution 5. A cheaper screening
+route stays available for smaller budgets, and it must not kill the skills we are hunting. Running only part of the possible
 configurations costs you something: some effects become impossible to tell apart no matter how much
 data you collect, because they produce the same pattern across the runs. That confusion is called
 *aliasing*, and which effects get confused is what *resolution* names. At Resolution III a skill's
@@ -156,9 +162,10 @@ The subset space is `2^N`. Two stages plus a validation pass:
 
 | Stage | Design | Configurations at N=20 |
 |---|---|---|
-| Screening | Resolution IV fractional factorial (Plackett–Burman + foldover) | 48 |
-| Exact | Full factorial over the `k` survivors | 128 at `k=7` |
-| Validation | Permutation sampling over the whole catalog | budgeted |
+| **Primary** | bounded order `t=2`, design of resolution 5, whole catalogue | 781 |
+| Fallback: screening | Resolution IV (Plackett–Burman + foldover) | 80 |
+| Fallback: exact | full factorial over the `k` survivors | 128 at `k=7` |
+| Validation | permutation sampling over the whole catalogue | budgeted |
 
 Resolution IV, not III: Resolution III aliases main effects with two-factor interactions, and a
 two-factor interaction *is* a skill that only works in combination — the phenomenon this tool

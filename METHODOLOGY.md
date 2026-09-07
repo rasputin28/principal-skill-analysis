@@ -35,7 +35,10 @@ properties above. **Foldover** — appending a second copy of a design with ever
 which doubles the runs and removes a specific kind of aliasing.
 
 **Shapley value** — the score given to a skill by averaging, over every combination of the others,
-how much the result improved at the moment that skill was added. **Interaction index** — the same
+how much the result improved at the moment that skill was added. **Dividend of a combination** —
+the part of that combination's worth that no smaller combination accounts for. A skill's dividend
+is what it is worth alone; a pair's dividend is what the pair is worth beyond the two separately.
+**Interaction order** — the size of the largest combination with a non-zero dividend. **Interaction index** — the same
 idea applied to a pair: how much the worth of one skill changes depending on whether the other is
 loaded. **Eigendecomposition** — rewriting a symmetric table of pairwise numbers as a set of
 mutually independent directions, each with a number saying how much of the table it accounts for.
@@ -95,7 +98,35 @@ resolve rate per task, the per-task variance, the informative band, and the invo
 (which skills ever fired). Answers **H4** (the availability-versus-invocation gap) on its own.
 Cannot answer anything about attribution.
 
-### 3.2 Screening — Resolution IV fractional factorial
+### 3.2 Primary route — bounded interaction order
+
+Enumeration is hopeless (`2^39`), but enumeration is not the only way. Rewrite the value function
+in terms of **dividends**: `v(C)` is the sum of the dividends of every combination inside `C`. That
+rewriting is exact and unique, and the score of a skill turns out to be the sum of the dividends of
+every combination containing it, each split equally among its members.
+
+The consequence is the whole design. **If no combination larger than `t` skills has a non-zero
+dividend, the scores are determined by `O(N^t)` numbers instead of `2^N`.** At `N = 39` and `t = 2`:
+
+| | count |
+|---|---:|
+| configurations, if enumerated | 549,755,813,888 |
+| dividends of order ≤ 2 | **781** |
+
+Nothing is approximated: inside the assumption the answer is exact. What is paid is the assumption,
+and the assumption is **tested, not trusted** (§3.4).
+
+How many runs it takes is a separate question with a proved answer: **a design recovers every
+effect up to order `t` if and only if its resolution is at least `2t+1`.** Measuring every pair
+(`t = 2`) therefore needs resolution 5. The design must also have at least as many runs as
+unknowns, since 781 unknowns cannot come out of fewer equations.
+
+### 3.3 Fallback route — screening at Resolution IV
+
+Used when the budget will not stretch to `p` configurations. Cheaper, and weaker in a specific way
+that is stated rather than hidden: a skill dropped at screening is dropped for good and the
+analysis has no way to notice, which is exactly what the held-out check of §3.4 provides and this
+route does not.
 
 **What "Resolution" means, since the table below uses it.** A design that runs only some of the
 possible configurations pays for that saving in aliasing: some pairs of effects become
@@ -144,7 +175,23 @@ survives to the stage that can identify it. `tests/test_estimate.py::test_pure_i
 split_evenly_and_ablation_would_miss_it` and `tests/test_design.py::test_foldover_actually_buys_
 resolution_iv` assert the two halves of this claim.
 
-### 3.3 Exact — full factorial over the survivors
+### 3.4 Testing the order assumption
+
+The one substantive assumption of the primary route is measured, not asserted.
+
+1. Split the configurations into an estimation set and a held-out set, by a seed fixed in the
+   pre-registration.
+2. Fit the order-`t` dividends on the estimation set only.
+3. Predict the held-out configurations, which the fit never saw.
+4. Compare the prediction error against the **noise floor**: the variance between repeated runs of
+   the same configuration, which no model can beat.
+
+If held-out error sits at the floor, the order-`t` description is capturing everything but noise.
+If it stands clearly above the floor, interactions above order `t` carry real signal and the
+reported scores are incomplete. The threshold is pre-registered, and a failed test is reported as a
+failed test rather than met with a larger `t` chosen after the fact.
+
+### 3.5 Exact — full factorial over the survivors
 
 **Why `2^k`, and what the `2` is.** The `2` is not "pairs". It is the switch: each skill is either
 loaded or not loaded, two states, so `k` skills give `2 x 2 x ... x 2 = 2^k` distinct
@@ -174,7 +221,7 @@ complete, **every interaction of every order is present in the data exactly**, w
 sampling and no extrapolation. `k` is capped by budget and fixed in the pre-registration before
 the screening estimates are seen.
 
-### 3.4 Validation
+### 3.6 Validation
 
 Permutation sampling over the complete catalog at reduced budget, to check that screening
 discarded nothing large. A discarded skill appearing with a large attribution is reported as a
@@ -186,6 +233,7 @@ failure of the screening design, not corrected in silence.
 |---|---|---|---|
 | 1 | Shapley value `φᵢ` — what a skill is worth on average | `shapley_exact_by_task` | exact stage |
 | 1 | main effect — which skills matter at all | `design.main_effects` | screening |
+| ≤ t | dividends of every combination up to order t | `estimate.mobius_coefficients` | primary route |
 | 2 | interaction index `I(i,j)` — does this pair help or duplicate | `interaction_index_by_task` | exact stage |
 | any | interaction index of a named group | `interaction_index` | exact stage |
 | group | orthogonal redundancy areas | `redundancy_axes` | exact stage |
