@@ -307,3 +307,108 @@ def test_interaction_index_rejects_an_unknown_player():
     values = _table(lambda c: float(len(c)), players)
     with pytest.raises(ValueError, match="not players"):
         estimate.interaction_index(values, players, ["a", "z"])
+
+
+def test_mobius_expansion_reconstructs_the_value_function():
+    rng = np.random.default_rng(31)
+    players = ["a", "b", "c", "d"]
+    values = {
+        frozenset(c): rng.normal(size=4)
+        for s in range(5)
+        for c in itertools.combinations(players, s)
+    }
+    coeffs = estimate.mobius_coefficients(values, players)
+    for key, vec in values.items():
+        assert np.allclose(estimate.reconstruct(coeffs, key), vec, atol=1e-10)
+
+
+def test_the_two_derivations_of_the_attribution_agree():
+    """Averaging over orderings, and splitting dividends, must give the same phi.
+
+    They are proved separately in the paper; that they agree numerically is a
+    check on both arguments, not on one implementation.
+    """
+    rng = np.random.default_rng(32)
+    players = ["a", "b", "c", "d", "e"]
+    values = {
+        frozenset(c): rng.normal(size=3)
+        for s in range(6)
+        for c in itertools.combinations(players, s)
+    }
+    by_orderings = estimate.shapley_exact_by_task(values, players)
+    by_dividends = estimate.shapley_from_mobius(
+        estimate.mobius_coefficients(values, players), players
+    )
+    assert np.allclose(by_orderings, by_dividends, atol=1e-10)
+
+
+def test_a_pure_pair_has_exactly_one_non_zero_dividend():
+    players = ["a", "b", "c"]
+    values = _table(lambda c: 1.0 if {"a", "b"} <= c else 0.0, players)
+    coeffs = estimate.mobius_coefficients(values, players)
+    assert coeffs[frozenset({"a", "b"})].mean() == pytest.approx(1.0)
+    for key, vec in coeffs.items():
+        if key != frozenset({"a", "b"}):
+            assert vec.mean() == pytest.approx(0.0, abs=1e-12)
+
+
+def test_faithfulness_accepts_a_truly_second_order_catalog():
+    players = ["a", "b", "c", "d"]
+    pair_worth = {frozenset({"a", "b"}): 0.2, frozenset({"c", "d"}): -0.1}
+    def value(c):
+        v = 0.1 * len(c)
+        for pair, w in pair_worth.items():
+            if pair <= c:
+                v += w
+        return v
+    values = _table(value, players, n_tasks=5)
+    heldout = [frozenset({"a", "c"}), frozenset({"a", "b", "c"}), frozenset(players)]
+    check = estimate.holdout_faithfulness(values, players, 2, heldout, noise_floor=1e-6)
+    assert check.passes
+    assert check.heldout_error < 1e-9
+
+
+def test_faithfulness_rejects_an_order_too_low():
+    """A catalogue with a genuine three-way effect must fail the order-2 check.
+
+    Five skills, so that order 3 has 26 unknowns against 30 fitting
+    configurations and remains identifiable; at four skills it would not be,
+    and the guard in fit_bounded_order would fire first.
+    """
+    players = ["a", "b", "c", "d", "e"]
+    def value(c):
+        return 0.1 * len(c) + (0.5 if {"a", "b", "c"} <= c else 0.0)
+    values = _table(value, players, n_tasks=5)
+    heldout = [frozenset({"a", "b", "c"}), frozenset(players)]
+    check = estimate.holdout_faithfulness(values, players, 2, heldout, noise_floor=1e-4)
+    assert not check.passes
+    assert check.ratio > 2.0
+    # the same data at order 3 describes it exactly
+    assert estimate.holdout_faithfulness(values, players, 3, heldout, noise_floor=1e-4).passes
+
+
+def test_fit_refuses_a_design_that_cannot_identify_the_dividends():
+    """Too few configurations for the unknowns is the resolution requirement, felt."""
+    players = ["a", "b", "c", "d"]
+    values = _table(lambda c: float(len(c)), players)
+    partial = {k: v for k, v in values.items() if len(k) <= 1}   # 5 runs, 11 unknowns
+    with pytest.raises(ValueError, match="cannot identify"):
+        estimate.fit_bounded_order(partial, players, order=2)
+
+
+def test_bounded_order_fit_recovers_the_exact_dividends_when_the_game_is_low_order():
+    players = ["a", "b", "c", "d"]
+    def value(c):
+        return 0.3 * ("a" in c) + 0.1 * ("b" in c) + (0.25 if {"a", "c"} <= c else 0.0)
+    values = _table(value, players, n_tasks=2)
+    fitted = estimate.fit_bounded_order(values, players, order=2)
+    exact = estimate.mobius_coefficients(values, players, max_order=2)
+    for key in exact:
+        assert np.allclose(fitted[key], exact[key], atol=1e-9)
+
+
+def test_faithfulness_refuses_an_empty_holdout():
+    players = ["a", "b"]
+    values = _table(lambda c: float(len(c)), players)
+    with pytest.raises(ValueError, match="vacuous"):
+        estimate.holdout_faithfulness(values, players, 1, [], noise_floor=1.0)

@@ -563,3 +563,176 @@ def coalition_curve(
         additive_prediction=additive_arr,
         gap=best_arr - additive_arr,
     )
+
+
+# --------------------------------------------------------------------------
+# Dividends -- the change of basis that makes the problem polynomial
+# --------------------------------------------------------------------------
+
+def mobius_coefficients(
+    values: Mapping[frozenset, np.ndarray],
+    players: Sequence[str],
+    max_order: int | None = None,
+) -> dict[frozenset, np.ndarray]:
+    """The dividend of every combination, per task.
+
+        a(T) = sum over L contained in T of (-1)^(|T|-|L|) v(L)
+
+    The dividend of a combination is the part of its worth that no smaller
+    combination accounts for: ``a({i})`` is what a skill is worth alone,
+    ``a({i,j})`` what the pair is worth beyond the two of them separately.
+
+    The expansion is exact and unique, and it is what makes bounded interaction
+    order useful: if dividends vanish above order ``t``, the whole value
+    function and every attribution follow from O(N**t) numbers rather than
+    2**N. ``max_order`` truncates the computation to that assumption.
+    """
+    out: dict[frozenset, np.ndarray] = {}
+    limit = len(players) if max_order is None else max_order
+    for size in range(limit + 1):
+        for combo in itertools.combinations(players, size):
+            target = frozenset(combo)
+            acc = np.zeros(len(next(iter(values.values()))))
+            for take in range(size + 1):
+                sign = (-1) ** (size - take)
+                for sub in itertools.combinations(combo, take):
+                    key = frozenset(sub)
+                    if key not in values:
+                        raise KeyError(
+                            f"coalition {sorted(key) or '(empty)'} was never run"
+                        )
+                    acc += sign * np.asarray(values[key], dtype=float)
+            out[target] = acc
+    return out
+
+
+def shapley_from_mobius(
+    coefficients: Mapping[frozenset, np.ndarray],
+    players: Sequence[str],
+) -> np.ndarray:
+    """Attribution from dividends: phi_i = sum over T containing i of a(T)/|T|.
+
+    Each combination's dividend is split equally among the skills that earned
+    it. Computing the attribution this way and by averaging over orderings must
+    agree, and the test suite checks that they do; the agreement is a check on
+    both derivations rather than on one implementation.
+    """
+    n_tasks = len(next(iter(coefficients.values())))
+    phi = np.zeros((len(players), n_tasks))
+    for i, player in enumerate(players):
+        for combo, dividend in coefficients.items():
+            if player in combo:
+                phi[i] += np.asarray(dividend, dtype=float) / len(combo)
+    return phi
+
+
+def reconstruct(
+    coefficients: Mapping[frozenset, np.ndarray],
+    coalition: frozenset,
+) -> np.ndarray:
+    """v(C) = sum of the dividends of every combination inside C."""
+    n_tasks = len(next(iter(coefficients.values())))
+    total = np.zeros(n_tasks)
+    for combo, dividend in coefficients.items():
+        if combo <= coalition:
+            total += np.asarray(dividend, dtype=float)
+    return total
+
+
+def design_matrix(
+    coalitions: Sequence[frozenset],
+    combinations: Sequence[frozenset],
+) -> np.ndarray:
+    """Row per configuration, column per combination, 1 where the second sits inside the first.
+
+    This is the linear system behind ``v(C) = sum of a(T) for T inside C``.
+    """
+    return np.array(
+        [[1.0 if t <= c else 0.0 for t in combinations] for c in coalitions]
+    )
+
+
+def fit_bounded_order(
+    values: Mapping[frozenset, np.ndarray],
+    players: Sequence[str],
+    order: int,
+) -> dict[frozenset, np.ndarray]:
+    """Estimate dividends up to ``order`` from whatever configurations were run.
+
+    The exact transform of :func:`mobius_coefficients` needs every subset of a
+    combination in order to compute its dividend, so it is unavailable from a
+    partial design; that is what the bounded-order assumption exists to avoid.
+    Under the assumption, ``v(C) = sum of a(T) for T inside C`` restricted to
+    ``|T| <= order`` is a linear system in the dividends, and the design is
+    solved for them by least squares.
+
+    Raises when the configurations that were run cannot identify the
+    coefficients, which is the practical face of the resolution requirement: a
+    design recovers every effect up to order ``t`` only if its resolution is at
+    least ``2t + 1``, and it needs at least as many runs as unknowns.
+    """
+    combos = [
+        frozenset(c)
+        for size in range(order + 1)
+        for c in itertools.combinations(players, size)
+    ]
+    coalitions = sorted(values, key=lambda k: (len(k), sorted(k)))
+    x = design_matrix(coalitions, combos)
+    if np.linalg.matrix_rank(x) < len(combos):
+        raise ValueError(
+            f"the {len(coalitions)} configurations run cannot identify the "
+            f"{len(combos)} dividends of order <= {order}; the design needs at least "
+            "that many runs and resolution 2*order+1"
+        )
+    y = np.array([np.asarray(values[c], dtype=float) for c in coalitions])
+    solution, *_ = np.linalg.lstsq(x, y, rcond=None)
+    return {t: solution[i] for i, t in enumerate(combos)}
+
+
+@dataclass(frozen=True)
+class FaithfulnessCheck:
+    order: int
+    heldout_error: float
+    noise_floor: float
+    ratio: float
+    passes: bool
+
+
+def holdout_faithfulness(
+    values: Mapping[frozenset, np.ndarray],
+    players: Sequence[str],
+    order: int,
+    heldout: Sequence[frozenset],
+    noise_floor: float,
+    tolerance: float = 2.0,
+) -> FaithfulnessCheck:
+    """Is bounded interaction order actually true here?
+
+    Fits dividends up to ``order`` (by :func:`fit_bounded_order`) on the
+    configurations *outside* ``heldout``,
+    predicts the held-out ones, and compares the mean squared prediction error
+    against ``noise_floor``, the variance between repeated runs of the same
+    configuration, which no model can beat.
+
+    Error at the floor means the order-``t`` description captures everything but
+    noise. Error clearly above it means interactions above order ``t`` carry
+    real signal and the attributions are incomplete. ``tolerance`` is the
+    multiple of the floor at which that verdict is declared, and belongs in the
+    pre-registration rather than being chosen once the number is known.
+    """
+    held = {frozenset(h) for h in heldout}
+    fitting = {k: v for k, v in values.items() if k not in held}
+    if not held:
+        raise ValueError("nothing held out; the check would be vacuous")
+    missing = [h for h in held if h not in values]
+    if missing:
+        raise KeyError(f"held-out coalitions were never run: {missing}")
+
+    coefficients = fit_bounded_order(fitting, players, order)
+    errors = [
+        float(np.mean((reconstruct(coefficients, h) - np.asarray(values[h], dtype=float)) ** 2))
+        for h in held
+    ]
+    error = float(np.mean(errors))
+    ratio = error / noise_floor if noise_floor > 0 else float("inf")
+    return FaithfulnessCheck(order, error, noise_floor, ratio, ratio <= tolerance)

@@ -186,6 +186,10 @@ The one substantive assumption of the primary route is measured, not asserted.
 4. Compare the prediction error against the **noise floor**: the variance between repeated runs of
    the same configuration, which no model can beat.
 
+`fit_bounded_order` refuses outright when the configurations actually run cannot identify the
+dividends — too few runs, or the wrong ones. That refusal is the resolution requirement made
+concrete rather than a separate check to remember.
+
 If held-out error sits at the floor, the order-`t` description is capturing everything but noise.
 If it stands clearly above the floor, interactions above order `t` carry real signal and the
 reported scores are incomplete. The threshold is pre-registered, and a failed test is reported as a
@@ -233,7 +237,9 @@ failure of the screening design, not corrected in silence.
 |---|---|---|---|
 | 1 | Shapley value `φᵢ` — what a skill is worth on average | `shapley_exact_by_task` | exact stage |
 | 1 | main effect — which skills matter at all | `design.main_effects` | screening |
-| ≤ t | dividends of every combination up to order t | `estimate.mobius_coefficients` | primary route |
+| ≤ t | dividends, exact transform (needs the full lattice) | `estimate.mobius_coefficients` | exact stage |
+| ≤ t | dividends fitted from a partial design, by least squares | `estimate.fit_bounded_order` | primary route |
+| — | is bounded order actually true here? | `estimate.holdout_faithfulness` | primary route |
 | 2 | interaction index `I(i,j)` — does this pair help or duplicate | `interaction_index_by_task` | exact stage |
 | any | interaction index of a named group | `interaction_index` | exact stage |
 | group | orthogonal redundancy areas | `redundancy_axes` | exact stage |
