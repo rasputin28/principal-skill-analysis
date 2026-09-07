@@ -46,7 +46,7 @@ Everything else technical is defined where it first appears, here and in
 
 Every step is forced by the failure of the one before it. Nothing here is decorative.
 
-**1. The quantity is the lift**, `v(S) − v(∅)`: how much better the agent does with the collection
+**1. The quantity is the lift**, $v(S) - v(\emptyset)$: how much better the agent does with the collection
 loaded than without. Every author reports a version of this. The question is how it is produced.
 
 **2. Ablation cannot answer that.** Remove one skill and measure the loss, and a skill that
@@ -62,8 +62,8 @@ total lift. One allocation satisfies all three — the **Shapley value**. That l
 efficiency, is what makes the ranked chart a real decomposition rather than a normalisation that
 resembles one.
 
-```
-φᵢ = Σ_{C ⊆ S\{i}}  [ |C|! (N−|C|−1)! / N! ] · [ v(C ∪ {i}) − v(C) ]
+```math
+\varphi_i \;=\; \sum_{C \subseteq S \setminus \{i\}} \frac{|C|!\,(N-|C|-1)!}{N!}\Big[\,v(C \cup \{i\}) - v(C)\,\Big]
 ```
 
 The paper derives this rather than citing it: the weights come from counting how many orderings
@@ -72,21 +72,34 @@ Linearity is the property usually disputed, so it is worth knowing it can be dro
 (1985) replaces it with monotonicity and the same estimator is again the unique one. Two
 independent routes to the same place is better evidence than either alone.
 
-**5. But that needs every subset, and there are `2^N` of them.** The `2` is not a pair — it is a
-switch: each skill loaded or not, two states per skill. At 39 skills that is 5.5 × 10¹¹
+**5. But that needs every subset, and there are $2^N$ of them.** The $2$ is not a pair — it is a
+switch: each skill loaded or not, two states per skill. At $N = 39$ that is $2^{39} \approx 5.5 \times 10^{11}$
 configurations.
 
 **6. The exponential barrier belongs to enumeration, not to the problem.** Rewrite the value
 function in terms of *dividends* — the part of a combination's worth that no smaller combination
-accounts for. That rewriting is exact and unique, and a skill's score turns out to be the sum of
-the dividends of every combination containing it, split equally among its members. So **if no
-combination bigger than `t` skills has a non-zero dividend, the whole thing is determined by
-`O(N^t)` numbers: 781 instead of 5.5 × 10¹¹ for pairs at 39 skills.** Nothing is approximated —
+accounts for. Writing $a(T)$ for the dividend of combination $T$, the rewriting is exact and
+unique,
+
+```math
+v(C) \;=\; \sum_{T \subseteq C} a(T),
+\qquad\text{and}\qquad
+\varphi_i \;=\; \sum_{T \,\ni\, i} \frac{a(T)}{|T|},
+```
+
+so a skill's score is the sum of the dividends of every combination containing it, split equally
+among its members. **If $a(T) = 0$ whenever $|T| > t$, the whole thing is determined by**
+
+```math
+p \;=\; \sum_{j=0}^{t} \binom{N}{j} \;=\; O(N^{t})
+```
+
+**numbers: $781$ instead of $5.5 \times 10^{11}$ for $t = 2$ at $N = 39$.** Nothing is approximated —
 inside the assumption the answer is exact. What is paid is the assumption, and the assumption gets
 tested against configurations held out of the fit rather than trusted.
 
 **7. How many runs that takes has a proved answer:** a design recovers every effect up to order `t`
-if and only if its resolution is at least `2t+1`. All pairs means resolution 5. A cheaper screening
+if and only if its resolution is at least $2t+1$. All pairs means resolution $5$. A cheaper screening
 route stays available for smaller budgets, and it must not kill the skills we are hunting. Running only part of the possible
 configurations costs you something: some effects become impossible to tell apart no matter how much
 data you collect, because they produce the same pattern across the runs. That confusion is called
@@ -96,9 +109,10 @@ other **is** a pair effect, so it can cancel to zero and be dropped. Resolution 
 running the design a second time with every choice reversed, keeps every skill's own effect clean.
 It costs double, and the skills this project exists to find are the ones the cheap option loses.
 
-**8. The exact stage measures every order at once.** At `k = 7` its 128 configurations are 1 empty
-baseline, 7 singles, **21 pairs**, 35 triples, 35 quadruples, 21 quintuples, 7 sextuples and the
-full set. Pairs are one size among many — the design is not pairwise.
+**8. The exact stage measures every order at once.** At $k = 7$ its $2^7 = 128$ configurations split
+by size as $\binom{7}{0}, \dots, \binom{7}{7}$: one empty baseline, $7$ singles, **$21$ pairs**, $35$
+triples, $35$ quadruples, $21$ quintuples, $7$ sextuples and the full set. Pairs are one size among
+many — the design is not pairwise.
 
 **9. A number per skill throws that away**, so PSA also measures every pair: how much the worth of
 one skill changes depending on whether the other is loaded. **10. A number per pair does not
@@ -142,7 +156,7 @@ estimate.minimal_spanning_subset(structure, phi)   # one per area; the rest is c
 ```
 
 The reading is algebraic, not interpretive: a block of `m` mutually redundant skills interacting
-pairwise at `-c` yields an eigenvalue of `-c(m-1)` with a uniform eigenvector over the block, which
+pairwise at $-c$ yields an eigenvalue of $-c(m-1)$ with a uniform eigenvector over the block, which
 is asserted in `tests/test_estimate.py::test_redundancy_axes_recover_a_planted_block`.
 
 Orthogonality here is *imposed by the method, not discovered in the data*. These are the
@@ -158,13 +172,13 @@ measure it.
 
 ## How it stays affordable
 
-The subset space is `2^N`. Two stages plus a validation pass:
+The subset space is $2^N$. The primary route avoids enumerating it; the fallback stages it:
 
 | Stage | Design | Configurations at N=20 |
 |---|---|---|
-| **Primary** | bounded order `t=2`, design of resolution 5, whole catalogue | 781 |
-| Fallback: screening | Resolution IV (Plackett–Burman + foldover) | 80 |
-| Fallback: exact | full factorial over the `k` survivors | 128 at `k=7` |
+| **Primary** | bounded order $t=2$, design of resolution $5$, whole catalogue | $781$ |
+| Fallback: screening | Resolution IV (Plackett–Burman + foldover) | $80$ |
+| Fallback: exact | full factorial over the $k$ survivors | $2^k = 128$ at $k=7$ |
 | Validation | permutation sampling over the whole catalogue | budgeted |
 
 Resolution IV, not III: Resolution III aliases main effects with two-factor interactions, and a
@@ -187,7 +201,7 @@ context changes whether information is used at all (Liu et al., TACL 2024). Load
 changes both.
 
 - **Length-matched placebo.** Loading a skill lengthens the prompt. `psa.controls.make_placebo`
-  writes an inert skill matched to the catalog's median length. Its `φ` must have a confidence
+  writes an inert skill matched to the catalog's median length. Its $\varphi$ must have a confidence
   interval containing zero — if it does not, the run set reports nothing.
 - **Saboteur.** A deliberately harmful skill that must come out significantly negative. An
   instrument that cannot detect sabotage cannot be trusted to detect improvement.

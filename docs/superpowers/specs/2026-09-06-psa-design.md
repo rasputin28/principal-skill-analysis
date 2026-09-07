@@ -45,27 +45,43 @@ convierte a PSA de estudio en herramienta y el que gobierna toda la arquitectura
 
 ## 4. Formulación
 
-Sea `S = {s₁ … s_N}` el catálogo bajo prueba y `C ⊆ S` una configuración (el subconjunto de
+Sea $S = \{s_1, \dots, s_N\}$ el catálogo bajo prueba y $C \subseteq S$ una configuración (el subconjunto de
 skills disponible para el agente en una corrida). Sea `T` el conjunto de tareas del benchmark
 y `Y(t, C, r)` el resultado de la corrida `r` sobre la tarea `t` bajo la configuración `C`.
 
-Función de valor: `v(C) = E_{t∈T, r} [ Y(t, C, r) ]`.
+Función de valor:
+
+```math
+v(C) \;=\; \mathbb{E}_{t \in T,\, r}\big[\,Y(t, C, r)\,\big]
+```
 
 ### 4.1 Estimando primario — valor de Shapley
 
+```math
+\varphi_i \;=\; \sum_{C \subseteq S \setminus \{i\}} \frac{|C|!\,(N-|C|-1)!}{N!}\Big[\,v(C \cup \{i\}) - v(C)\,\Big]
 ```
-φᵢ = Σ_{C ⊆ S\{i}}  ( |C|! · (N−|C|−1)! / N! ) · [ v(C ∪ {i}) − v(C) ]
+
+Equivalentemente, en la base de dividendos $a(T)$ del Teorema de representación:
+
+```math
+v(C) \;=\; \sum_{T \subseteq C} a(T),
+\qquad
+\varphi_i \;=\; \sum_{T \,\ni\, i} \frac{a(T)}{|T|},
+\qquad
+a(T) \;=\; \sum_{L \subseteq T} (-1)^{|T|-|L|} v(L)
 ```
+
+y si $a(T) = 0$ para todo $|T| > t$, bastan $p = \sum_{j=0}^{t}\binom{N}{j} = O(N^{t})$ números.
 
 Se elige Shapley y no un coeficiente de regresión ni una ablación simple por cuatro
 propiedades, todas necesarias aquí:
 
-- **Eficiencia:** `Σᵢ φᵢ = v(S) − v(∅)`. El aporte de las partes suma exactamente la mejora
+- **Eficiencia:** $\sum_i \varphi_i = v(S) - v(\emptyset)$. El aporte de las partes suma exactamente la mejora
   total de la colección. Es la propiedad que hace legítimo el gráfico de Pareto ordenado por
-  `φ`: los porcentajes suman 100 % por teorema, no por normalización arbitraria.
-- **Jugador nulo:** una skill que nunca cambia el resultado recibe `φ = 0` exacto.
-- **Simetría:** dos skills intercambiables reciben el mismo `φ`.
-- **Promedio sobre coaliciones:** `v(C∪{i}) − v(C)` se promedia sobre *todos* los contextos
+  $\varphi$: los porcentajes suman $100\%$ por teorema, no por normalización arbitraria.
+- **Jugador nulo:** una skill que nunca cambia el resultado recibe $\varphi_i = 0$ exacto.
+- **Simetría:** dos skills intercambiables reciben el mismo $\varphi$.
+- **Promedio sobre coaliciones:** $v(C \cup \{i\}) - v(C)$ se promedia sobre *todos* los contextos
   posibles. Una skill que solo rinde acompañada aparece aquí y no aparece en una ablación
   leave-one-out.
 
@@ -90,22 +106,23 @@ colinealidad entre configuraciones, que es un chequeo de higiene, no un hallazgo
 Para dos catálogos `A` y `B` evaluados con el mismo agente base, mismo benchmark, mismo modelo
 y mismas semillas, las cantidades comparables son:
 
-- `v(S_A) − v(∅)` frente a `v(S_B) − v(∅)`: cuánto compra cada colección sobre el agente desnudo.
+- $v(S_A) - v(\emptyset)$ frente a $v(S_B) - v(\emptyset)$: cuánto compra cada colección sobre el agente desnudo.
 - El mismo delta normalizado por coste (tokens, turnos, tiempo).
 - El solape en el espacio latente de 4.2.
 
-`φ` individual **no** es comparable entre catálogos distintos (los repartos son internos a
+$\varphi_i$ individual **no** es comparable entre catálogos distintos (los repartos son internos a
 cada colección); el total sí lo es. Esta distinción debe estar escrita en el reporte, porque
 es la forma más probable de que alguien use mal la herramienta.
 
 ## 5. Diseño experimental
 
-`2^N` es inabordable: con `N = 20`, un millón de configuraciones. Dos etapas más una validación.
+$2^N$ es inabordable por enumeración: con $N = 20$, más de un millón de configuraciones. La ruta
+principal cambia de base (arriba); el cribado en dos etapas queda como respaldo de presupuesto.
 
 ### Etapa 1 — cribado (screening)
 
 Diseño factorial fraccionado de **Resolución IV**, construido como diseño de Plackett–Burman
-seguido de su reflejo (foldover). Coste en configuraciones: `2 · ceil4(N+1)`, es decir 48
+seguido de su reflejo (foldover). Coste en configuraciones: $2 \cdot 4\lceil (N+1)/4 \rceil$, es decir $48$
 configuraciones para `N ≤ 23`.
 
 Se descarta Resolución III pese a costar la mitad: aliasa los efectos principales con las
@@ -119,16 +136,16 @@ corte después de ver los datos.
 
 ### Etapa 2 — Shapley exacto
 
-Sobre las `k` supervivientes, factorial completo `2^k`. Con `k = 7`, 128 configuraciones.
+Sobre las $k$ supervivientes, factorial completo $2^k$. Con $k = 7$, $128$ configuraciones.
 Shapley se calcula exacto: sin muestreo, sin modelo sustituto, sin aproximación que un
 revisor pueda cuestionar. Las interacciones de todos los órdenes quedan capturadas.
 
 ### Validación del cribado
 
 Muestreo por permutaciones (estimador de Shapley por muestreo, presupuesto reducido) sobre el
-catálogo **completo**, para verificar que ninguna skill descartada en la etapa 1 tiene `φ`
+catálogo **completo**, para verificar que ninguna skill descartada en la etapa 1 tiene $\varphi$
 alto. Es el control que responde a "¿y si tu cribado se equivocó?". Si una descartada aparece
-con `φ` significativo, se reporta como fallo del diseño de cribado, no se corrige en silencio.
+con $\varphi$ significativo, se reporta como fallo del diseño de cribado, no se corrige en silencio.
 
 ### Presupuesto
 
@@ -170,7 +187,7 @@ Cuatro controles. Sin ellos el resultado es inatribuible y el paper no sobrevive
 ### 7.1 Placebo de longitud
 Cargar una skill añade contexto al prompt. Una skill podría "funcionar" solo por alargarlo.
 Se incluye en cada diseño una **skill placebo**: longitud en tokens equivalente a la mediana
-del catálogo, contenido plausible pero sin instrucción accionable. Su `φ` debe tener un
+del catálogo, contenido plausible pero sin instrucción accionable. Su $\varphi$ debe tener un
 intervalo de confianza que contenga cero. **Si no lo contiene, el instrumento está roto y no
 se reportan resultados.** Este es el control negativo que valida todo el aparato.
 
@@ -182,14 +199,14 @@ efecto en tratados (invocada). La brecha entre las dos es en sí un hallazgo pub
 skill excelente que nunca se dispara vale cero en la práctica.
 
 ### 7.3 Contaminación del benchmark
-SWE-bench Verified es anterior al corte de entrenamiento de los modelos actuales. Un `φ` puede
+SWE-bench Verified es anterior al corte de entrenamiento de los modelos actuales. Un $\varphi$ puede
 reflejar memorización y no capacidad. Mitigación: un conjunto de validación externa posterior
 al corte —PRs propios o instancias recientes— sobre el que se verifica si el **orden** de los
-`φ` se transfiere. Si se transfiere, el hallazgo es sobre skills; si no, era memorización, y
+$\varphi$ se transfiere. Si se transfiere, el hallazgo es sobre skills; si no, era memorización, y
 eso también se reporta.
 
 ### 7.4 Alcance por modelo y por arnés
-Los `φ` pueden invertirse entre modelos. O se corren al menos dos modelos, o el alcance se
+Los $\varphi$ pueden invertirse entre modelos. O se corren al menos dos modelos, o el alcance se
 declara en el enunciado del hallazgo. Lo mismo para el arnés que aloja las skills.
 
 ## 8. Arquitectura
@@ -203,7 +220,7 @@ Siete componentes con fronteras explícitas. Cada uno se entiende y se prueba po
 | `compile` | configuración `C` | workspace hermético | Materializar un entorno con exactamente las skills de `C` y nada más |
 | `runner` | (tarea, config, semilla) | traza + desenlaces | Ejecutar el agente. Una implementación por arnés, tras una interfaz común |
 | `trace` | traza cruda | registro de activación | Determinar qué skills se invocaron realmente |
-| `estimate` | ledger de corridas | `φ` + IC, PCA, comparativas | Todo el análisis. Sin acceso al runner |
+| `estimate` | ledger de corridas | $\varphi$ + IC, PCA, comparativas | Todo el análisis. Sin acceso al runner |
 | `report` | resultados | ficha del catálogo | Presentación honesta, incluidos los controles fallidos |
 
 Frontera dura entre `runner` y `estimate`: el análisis debe poder correrse sobre un ledger
@@ -234,14 +251,14 @@ el resultado bonito. Sin pre-registro, este trabajo es indefendible.
 
 Verificables, en orden. El proyecto no avanza si uno falla.
 
-1. **Control negativo:** el `φ` de la skill placebo tiene IC que contiene cero.
+1. **Control negativo:** el $\varphi$ de la skill placebo tiene IC que contiene cero.
 2. **Control positivo:** una skill saboteadora deliberada (por ejemplo, "omite los tests")
-   produce `φ` significativamente negativo.
-3. **Estabilidad:** dos réplicas independientes con semillas distintas producen órdenes de `φ`
+   produce $\varphi$ significativamente negativo.
+3. **Estabilidad:** dos réplicas independientes con semillas distintas producen órdenes de $\varphi$
    concordantes, con un umbral de concordancia (τ de Kendall) fijado en el pre-registro.
 4. **Reproducibilidad por terceros:** `estimate` corrido sobre el ledger publicado reproduce las
    cifras del paper sin acceso al runner.
-5. **Eficiencia:** los `φ` estimados suman `v(S) − v(∅)` dentro de la tolerancia numérica.
+5. **Eficiencia:** los $\varphi$ estimados suman `v(S) − v(∅)` dentro de la tolerancia numérica.
 
 Los criterios 1 y 2 se corren *antes* que cualquier medición de interés. Son la calibración del
 instrumento; medir con un instrumento sin calibrar es lo que hace este campo hoy.
@@ -250,10 +267,10 @@ instrumento; medir con un instrumento sin calibrar es lo que hace este campo hoy
 
 - **Coste.** Es el riesgo principal y no está acotado hasta que se fije el presupuesto de §5.
   Mitigación: el piloto de banda informativa se corre primero y sobre pocas tareas.
-- **Efecto nulo.** Es posible que ningún `φ` sea distinguible de cero con presupuesto realista.
+- **Efecto nulo.** Es posible que ningún $\varphi$ sea distinguible de cero con presupuesto realista.
   Ese resultado es publicable y debe reportarse tal cual; el diseño no debe empujar hacia el
   hallazgo positivo.
-- **Sensibilidad al arnés.** Si los `φ` cambian de signo entre arneses, el hallazgo se vuelve
+- **Sensibilidad al arnés.** Si los $\varphi$ cambian de signo entre arneses, el hallazgo se vuelve
   condicional y pierde fuerza. Se detecta con el factor de arnés y se reporta.
 - **Citas del paper sin verificar.** Las referencias del borrador deben verificarse una a una
   contra la fuente antes de someter.

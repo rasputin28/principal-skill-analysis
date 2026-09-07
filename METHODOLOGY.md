@@ -12,11 +12,11 @@ Every technical word used below, defined once. Nothing here is assumed known.
 **Skill** — one written instruction file an agent can load. **Catalogue** — a set of them, pinned
 to a repository and revision. **Configuration** — the subset of a catalogue made available for one
 attempt at one task; it may be empty, one skill, or all of them. **Run** — one attempt: one agent,
-one task, one configuration. **Lift** — how much better the agent does with the whole catalogue
-loaded than with none of it.
+one task, one configuration. **Lift** — $v(S) - v(\emptyset)$: how much better the agent does with the whole catalogue loaded
+than with none of it.
 
-**Main effect of a skill** — the average result across the runs where that skill was loaded, minus
-the average across the runs where it was not. It is the crudest possible measure of a skill: what
+**Main effect of a skill** — $\bar v_{j+} - \bar v_{j-}$: the average result across the runs where
+skill $j$ was loaded, minus the average across the runs where it was not. It is the crudest possible measure of a skill: what
 happens on average when it is present.
 
 **Balanced design** — a layout of runs in which every skill is loaded in half of them. **Orthogonal
@@ -34,13 +34,14 @@ design** — a standard recipe for building such a layout with the balance and o
 properties above. **Foldover** — appending a second copy of a design with every choice reversed,
 which doubles the runs and removes a specific kind of aliasing.
 
-**Shapley value** — the score given to a skill by averaging, over every combination of the others,
-how much the result improved at the moment that skill was added. **Dividend of a combination** —
-the part of that combination's worth that no smaller combination accounts for. A skill's dividend
+**Shapley value** — written $\varphi_i$: the score given to skill $i$ by averaging, over every
+combination of the others, how much the result improved at the moment that skill was added. **Dividend of a combination** — written $a(T)$, the part of the worth of $T$ that no smaller
+combination accounts for, defined by $a(T) = \sum_{L \subseteq T} (-1)^{|T|-|L|} v(L)$ and satisfying
+$v(C) = \sum_{T \subseteq C} a(T)$. A skill's dividend
 is what it is worth alone; a pair's dividend is what the pair is worth beyond the two separately.
-**Interaction order** — the size of the largest combination with a non-zero dividend. **Interaction index** — the same
-idea applied to a pair: how much the worth of one skill changes depending on whether the other is
-loaded. **Eigendecomposition** — rewriting a symmetric table of pairwise numbers as a set of
+**Interaction order** — the largest $|T|$ with $a(T) \neq 0$. **Interaction index** — written $I(i,j)$, the same idea applied to a pair: the average of
+$v(C \cup \{i,j\}) - v(C \cup \{i\}) - v(C \cup \{j\}) + v(C)$ over contexts $C$, which measures how
+much the worth of one skill changes depending on whether the other is loaded. **Eigendecomposition** — rewriting a symmetric table of pairwise numbers as a set of
 mutually independent directions, each with a number saying how much of the table it accounts for.
 
 **Bootstrap** — estimating how much a result would move under a different sample by repeatedly
@@ -72,7 +73,7 @@ Concretely, at a catalog of 39 skills:
 |---|---|---|
 | pilot | 2 (empty, and the full catalog) | 0 and 39 |
 | screening | 80 | about half the catalog, by construction |
-| exact | 2^k, e.g. 128 at k=7 | every size from 0 to k |
+| exact | $2^k$, e.g. $128$ at $k=7$ | every size from $0$ to $k$ |
 | validation | budgeted, e.g. 40 | varies along random permutations |
 
 A screening run therefore loads roughly twenty skills at once. That is deliberate: a balanced
@@ -100,30 +101,36 @@ Cannot answer anything about attribution.
 
 ### 3.2 Primary route — bounded interaction order
 
-Enumeration is hopeless (`2^39`), but enumeration is not the only way. Rewrite the value function
+Enumeration is hopeless ($2^{39}$), but enumeration is not the only way. Rewrite the value function
 in terms of **dividends**: `v(C)` is the sum of the dividends of every combination inside `C`. That
 rewriting is exact and unique, and the score of a skill turns out to be the sum of the dividends of
 every combination containing it, each split equally among its members.
 
-The consequence is the whole design. **If no combination larger than `t` skills has a non-zero
-dividend, the scores are determined by `O(N^t)` numbers instead of `2^N`.** At `N = 39` and `t = 2`:
+```math
+v(C) \;=\; \sum_{T \subseteq C} a(T)
+\qquad\Longrightarrow\qquad
+\varphi_i \;=\; \sum_{T \,\ni\, i} \frac{a(T)}{|T|}
+```
+
+The consequence is the whole design. **If $a(T) = 0$ for every $|T| > t$, the scores are determined
+by $p = \sum_{j=0}^{t} \binom{N}{j} = O(N^{t})$ numbers instead of $2^N$.** At $N = 39$, $t = 2$:
 
 | | count |
 |---|---:|
-| configurations, if enumerated | 549,755,813,888 |
-| dividends of order ≤ 2 | **781** |
+| configurations, if enumerated, $2^{39}$ | $549{,}755{,}813{,}888$ |
+| dividends of order $\le 2$, $\;1 + \binom{39}{1} + \binom{39}{2}$ | $\mathbf{781}$ |
 
 Nothing is approximated: inside the assumption the answer is exact. What is paid is the assumption,
 and the assumption is **tested, not trusted** (§3.4).
 
 How many runs it takes is a separate question with a proved answer: **a design recovers every
-effect up to order `t` if and only if its resolution is at least `2t+1`.** Measuring every pair
-(`t = 2`) therefore needs resolution 5. The design must also have at least as many runs as
-unknowns, since 781 unknowns cannot come out of fewer equations.
+effect up to order $t$ if and only if its resolution is at least $2t+1$.** Measuring every pair
+($t = 2$) therefore needs resolution $5$. The design must also have at least $p$ runs, since $781$
+unknowns cannot come out of fewer equations.
 
 ### 3.3 Fallback route — screening at Resolution IV
 
-Used when the budget will not stretch to `p` configurations. Cheaper, and weaker in a specific way
+Used when the budget will not stretch to $p$ configurations. Cheaper, and weaker in a specific way
 that is stated rather than hidden: a skill dropped at screening is dropped for good and the
 analysis has no way to notice, which is exactly what the held-out check of §3.4 provides and this
 route does not.
@@ -148,7 +155,7 @@ this study exists to find are exactly the ones Resolution III would lose.
 Runs required as a function of catalogue size, computed by `psa.design.screening_design` rather
 than quoted from a table:
 
-| skills (N) | Resolution III | **Resolution IV (used)** | full factorial `2^N` |
+| skills $N$ | Resolution III | **Resolution IV (used)** | full factorial $2^N$ |
 |---:|---:|---:|---:|
 | 5 | 8 | **16** | 32 |
 | 10 | 12 | **24** | 1,024 |
@@ -197,12 +204,13 @@ failed test rather than met with a larger `t` chosen after the fact.
 
 ### 3.5 Exact — full factorial over the survivors
 
-**Why `2^k`, and what the `2` is.** The `2` is not "pairs". It is the switch: each skill is either
-loaded or not loaded, two states, so `k` skills give `2 x 2 x ... x 2 = 2^k` distinct
-configurations. And `k` is *not* the size of the harness — `N` is. `k` is what survives screening.
+**Why $2^k$, and what the $2$ is.** The $2$ is not "pairs". It is the switch: each skill is either
+loaded or not, two states, so $k$ skills give $\underbrace{2 \times 2 \times \cdots \times 2}_{k} = 2^k$
+distinct configurations. And $k$ is *not* the size of the harness — $N$ is. $k$ is what survives
+screening.
 
-The `2^k` configurations contain every group size at once, in the proportions of a row of
-Pascal's triangle. At `k = 7`:
+The $2^k$ configurations contain every group size at once, in the proportions $\binom{k}{m}$ of a
+row of Pascal's triangle, since $\sum_{m=0}^{k}\binom{k}{m} = 2^k$. At $k = 7$:
 
 | configuration size | how many | |
 |---:|---:|---|
@@ -214,13 +222,13 @@ Pascal's triangle. At `k = 7`:
 | 5 | 21 | quintuples |
 | 6 | 7 | sextuples |
 | 7 | 1 | the whole surviving catalog |
-| | **128** | `= 2^7` |
+| | $\mathbf{128}$ | $= 2^7$ |
 
 Pairs are 21 of 128 — sixteen per cent of the runs. The design is not "pairwise"; pairs are simply
 one of the sizes it covers, and the reason every interaction order is recoverable is that every
 size is present.
 
-Every one of the `2^k` subsets of the `k` retained skills is run. Because the subset space is
+Every one of the $2^k$ subsets of the $k$ retained skills is run. Because the subset space is
 complete, **every interaction of every order is present in the data exactly**, with no model, no
 sampling and no extrapolation. `k` is capped by budget and fixed in the pre-registration before
 the screening estimates are seen.
@@ -235,12 +243,12 @@ failure of the screening design, not corrected in silence.
 
 | order | quantity | function | available from |
 |---|---|---|---|
-| 1 | Shapley value `φᵢ` — what a skill is worth on average | `shapley_exact_by_task` | exact stage |
+| 1 | Shapley value $\varphi_i$ — what a skill is worth on average | `shapley_exact_by_task` | exact stage |
 | 1 | main effect — which skills matter at all | `design.main_effects` | screening |
 | ≤ t | dividends, exact transform (needs the full lattice) | `estimate.mobius_coefficients` | exact stage |
 | ≤ t | dividends fitted from a partial design, by least squares | `estimate.fit_bounded_order` | primary route |
 | — | is bounded order actually true here? | `estimate.holdout_faithfulness` | primary route |
-| 2 | interaction index `I(i,j)` — does this pair help or duplicate | `interaction_index_by_task` | exact stage |
+| 2 | interaction index $I(i,j)$ — does this pair help or duplicate | `interaction_index_by_task` | exact stage |
 | any | interaction index of a named group | `interaction_index` | exact stage |
 | group | orthogonal redundancy areas | `redundancy_axes` | exact stage |
 | group | minimal spanning subset | `minimal_spanning_subset` | exact stage |
@@ -257,7 +265,7 @@ estimator rather than three that happen to agree.
 
 The question "which four should I load" is not answered by any per-skill ranking, and it is not
 answered by enumerating groups either: reporting the interaction index of every subset would
-produce `2^k` numbers, which is a matrix, not a finding. PSA answers it three ways, each sized
+produce $2^k$ numbers, which is a matrix, not a finding. PSA answers it three ways, each sized
 to a different decision.
 
 1. **`coalition_curve`** — the value of the *best* coalition at every size, read straight off the
@@ -273,7 +281,7 @@ to a different decision.
 
 ### Reading the additivity gap
 
-`coalition_curve` reports `best_value − additive_prediction` at each size. The gap is identically
+`coalition_curve` reports $v(B_m) - \big(v(\emptyset) + \sum_{i \in B_m}\varphi_i\big)$ at each size $m$, where $B_m$ is the best measured coalition of that size. The gap is identically
 zero at size 0 and at the full catalog, by the efficiency property — the attributions are built
 to sum to the total lift, so no gap can exist at either end. The information is in between:
 
@@ -305,6 +313,6 @@ satisfied, turns to solution, tokens consumed, whether the patch touched the ref
 
 - It does not run pairs, or any fixed group size, as an experimental unit.
 - It does not identify specific pairs from the screening stage; that requires the exact stage.
-- It does not report the interaction index of every subset; that is `2^k` numbers and no decision.
+- It does not report the interaction index of every subset; that is $2^k$ numbers and no decision.
 - It does not measure whether a skill is well written, only whether its presence changed outcomes.
 - It does not extrapolate. Every coalition it names was actually run.
