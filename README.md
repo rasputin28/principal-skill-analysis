@@ -126,6 +126,34 @@ invocation record run before anything of interest.
 The exact procedure is specified in [METHODOLOGY.md](METHODOLOGY.md); the argument for it is
 [the paper](paper.md).
 
+## What the answer looks like
+
+Two figures, both produced by running the estimator in this repository on a simulated catalogue
+where the right answer is known. **No measurement has been run**; these show what the analysis
+produces, not what it found. Regenerate them with `python scripts/make-figures.py`.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/psa-concentration-dark.svg">
+  <img src="assets/psa-concentration-light.svg" alt="Sorted share of the total lift for 14 simulated skills, with a cumulative curve below. Three skills account for 47 per cent, seven for 78 per cent, and two contribute exactly zero." width="100%">
+</picture>
+
+The shares sum to 100% by construction, so this is a decomposition rather than a ranking. Two
+skills score exactly zero — not small, zero — which is the property that justifies dropping them.
+
+And the four kept skills are **not** the four largest. That is the point of the second figure.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/psa-pillars-dark.svg">
+  <img src="assets/psa-pillars-light.svg" alt="A table of 14 skills against four recovered axes. Each skill loads strongly on exactly one axis; the four axes correspond to planning, verification, debugging and security. One representative per axis is marked kept." width="100%">
+</picture>
+
+Each column is one independent direction recovered from the interaction matrix. The estimator was
+given only the skills and their outcomes — it was not told the pillars exist — and it separated
+them, ranked them by how much lift each carries, and identified the spare copies. **Four of the
+fourteen skills reproduce the entire lift.** Three of the largest scores sit inside a single pillar
+and substitute for one another; keeping one of them loses nothing, which no per-skill ranking can
+tell you.
+
 ## Combinations, not just skills
 
 A per-skill number cannot say whether skill 1 is better paired with skill 3 than with skill 2 —
@@ -176,6 +204,11 @@ The subset space is $2^N$. The primary route avoids enumerating it; the fallback
 
 | Stage | Design | Configurations at N=20 |
 |---|---|---|
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/psa-scaling-dark.svg">
+  <img src="assets/psa-scaling-light.svg" alt="Log-scale curve of configurations required against catalogue size. Enumeration reaches 1.15e18 at N=60; bounded order at t=2 needs 1,831; random sampling grows proportional to k log N." width="100%">
+</picture>
+
 | **Primary** | bounded order $t=2$, design of resolution $5$, whole catalogue | $781$ |
 | Fallback: screening | Resolution IV (Plackett–Burman + foldover) | $80$ |
 | Fallback: exact | full factorial over the $k$ survivors | $2^k = 128$ at $k=7$ |

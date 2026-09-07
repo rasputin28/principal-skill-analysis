@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 560" width="940" height="560" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+<text x="40" y="28" font-size="15.5" font-weight="600" fill="#0b0b0b">A few skills carry the catalogue, and some carry nothing</text>
+<text x="40" y="47" font-size="12.5" fill="#52514e">Simulated catalogue of 14 skills. Shares sum to 100% by construction, so this is a decomposition and not a ranking.</text>
+<text x="40" y="64" font-size="12" font-weight="600" fill="#0b0b0b">Share of the total lift</text>
+<line x1="150" y1="246.0" x2="900" y2="246.0" stroke="#dcdcd6" stroke-width="1"/>
+<text x="141" y="250.0" font-size="10.5" text-anchor="end" fill="#8b8b86">0%</text>
+<line x1="150" y1="193.5" x2="900" y2="193.5" stroke="#dcdcd6" stroke-width="1"/>
+<text x="141" y="197.5" font-size="10.5" text-anchor="end" fill="#8b8b86">5%</text>
+<line x1="150" y1="141.0" x2="900" y2="141.0" stroke="#dcdcd6" stroke-width="1"/>
+<text x="141" y="145.0" font-size="10.5" text-anchor="end" fill="#8b8b86">10%</text>
+<line x1="150" y1="88.5" x2="900" y2="88.5" stroke="#dcdcd6" stroke-width="1"/>
+<text x="141" y="92.5" font-size="10.5" text-anchor="end" fill="#8b8b86">15%</text>
+<path d="M153.0,246.0 V84.7 Q153.0,80.7 157.0,80.7 H196.6 Q200.6,80.7 200.6,84.7 V246.0 Z" fill="#eb6834"/>
+<text transform="translate(176.8,254.0) rotate(45)" font-size="10" fill="#52514e">plan-first</text>
+<path d="M206.6,246.0 V84.7 Q206.6,80.7 210.6,80.7 H250.1 Q254.1,80.7 254.1,84.7 V246.0 Z" fill="#2a78d6"/>
+<text transform="translate(230.4,254.0) rotate(45)" font-size="10" fill="#52514e">decompose</text>
+<path d="M260.1,246.0 V84.7 Q260.1,80.7 264.1,80.7 H303.7 Q307.7,80.7 307.7,84.7 V246.0 Z" fill="#2a78d6"/>
+<text transform="translate(283.9,254.0) rotate(45)" font-size="10" fill="#52514e">spec-before-code</text>
+<path d="M313.7,246.0 V169.8 Q313.7,165.8 317.7,165.8 H357.3 Q361.3,165.8 361.3,169.8 V246.0 Z" fill="#eb6834"/>
+<text transform="translate(337.5,254.0) rotate(45)" font-size="10" fill="#52514e">tdd</text>
+<path d="M367.3,246.0 V169.8 Q367.3,165.8 371.3,165.8 H410.9 Q414.9,165.8 414.9,169.8 V246.0 Z" fill="#2a78d6"/>
+<text transform="translate(391.1,254.0) rotate(45)" font-size="10" fill="#52514e">verify-done</text>
+<path d="M420.9,246.0 V169.8 Q420.9,165.8 424.9,165.8 H464.4 Q468.4,165.8 468.4,169.8 V246.0 Z" fill="#2a78d6"/>
+<text transform="translate(444.6,254.0) rotate(45)" font-size="10" fill="#52514e">regression-check</text>
+<path d="M474.4,246.0 V169.8 Q474.4,165.8 478.4,165.8 H518.0 Q522.0,165.8 522.0,169.8 V246.0 Z" fill="#2a78d6"/>
+<text transform="translate(498.2,254.0) rotate(45)" font-size="10" fill="#52514e">review-diff</text>
+<path d="M528.0,246.0 V196.5 Q528.0,192.5 532.0,192.5 H571.6 Q575.6,192.5 575.6,196.5 V246.0 Z" fill="#eb6834"/>
+<text transform="translate(551.8,254.0) rotate(45)" font-size="10" fill="#52514e">debug-systematic</text>
+<path d="M581.6,246.0 V196.5 Q581.6,192.5 585.6,192.5 H625.1 Q629.1,192.5 629.1,196.5 V246.0 Z" fill="#2a78d6"/>
+<text transform="translate(605.4,254.0) rotate(45)" font-size="10" fill="#52514e">root-cause</text>
+<path d="M635.1,246.0 V196.5 Q635.1,192.5 639.1,192.5 H678.7 Q682.7,192.5 682.7,196.5 V246.0 Z" fill="#2a78d6"/>
+<text transform="translate(658.9,254.0) rotate(45)" font-size="10" fill="#52514e">repro-first</text>
+<path d="M688.7,246.0 V213.5 Q688.7,209.5 692.7,209.5 H732.3 Q736.3,209.5 736.3,213.5 V246.0 Z" fill="#eb6834"/>
+<text transform="translate(712.5,254.0) rotate(45)" font-size="10" fill="#52514e">threat-model</text>
+<path d="M742.3,246.0 V213.5 Q742.3,209.5 746.3,209.5 H785.9 Q789.9,209.5 789.9,213.5 V246.0 Z" fill="#2a78d6"/>
+<text transform="translate(766.1,254.0) rotate(45)" font-size="10" fill="#52514e">input-validation</text>
+<path d="M795.9,246.0 V246.0 Q795.9,245.2 796.7,245.2 H842.6 Q843.4,245.2 843.4,246.0 V246.0 Z" fill="#2a78d6"/>
+<text x="819.6" y="240.0" font-size="10" text-anchor="middle" fill="#8b8b86">0</text>
+<text transform="translate(819.6,254.0) rotate(45)" font-size="10" fill="#52514e">style-guide</text>
+<path d="M849.4,246.0 V246.0 Q849.4,245.2 850.2,245.2 H896.2 Q897.0,245.2 897.0,246.0 V246.0 Z" fill="#2a78d6"/>
+<text x="873.2" y="240.0" font-size="10" text-anchor="middle" fill="#8b8b86">0</text>
+<text transform="translate(873.2,254.0) rotate(45)" font-size="10" fill="#52514e">commit-format</text>
+<text x="40" y="338" font-size="12" font-weight="600" fill="#0b0b0b">Cumulative</text>
+<line x1="150" y1="470.0" x2="900" y2="470.0" stroke="#dcdcd6" stroke-width="1"/>
+<text x="141" y="474.0" font-size="10.5" text-anchor="end" fill="#8b8b86">0%</text>
+<line x1="150" y1="411.0" x2="900" y2="411.0" stroke="#dcdcd6" stroke-width="1"/>
+<text x="141" y="415.0" font-size="10.5" text-anchor="end" fill="#8b8b86">50%</text>
+<line x1="150" y1="352.0" x2="900" y2="352.0" stroke="#dcdcd6" stroke-width="1"/>
+<text x="141" y="356.0" font-size="10.5" text-anchor="end" fill="#8b8b86">100%</text>
+<polyline points="176.8,451.4 230.4,432.9 283.9,414.3 337.5,405.3 391.1,396.2 444.6,387.2 498.2,378.2 551.8,372.2 605.4,366.2 658.9,360.2 712.5,356.1 766.1,352.0 819.6,352.0 873.2,352.0" fill="none" stroke="#2a78d6" stroke-width="2"/>
+<circle cx="283.9" cy="414.3" r="4.5" fill="#2a78d6"/>
+<text x="292.9" y="418.3" font-size="11.5" fill="#0b0b0b">top 3 = 47%</text>
+<circle cx="498.2" cy="378.2" r="4.5" fill="#2a78d6"/>
+<text x="507.2" y="382.2" font-size="11.5" fill="#0b0b0b">top 7 = 78%</text>
+<rect x="40" y="502" width="11" height="11" rx="2.5" fill="#eb6834"/>
+<text x="57" y="512" font-size="12" fill="#0b0b0b">kept by the minimal spanning subset</text>
+<rect x="330" y="502" width="11" height="11" rx="2.5" fill="#2a78d6"/>
+<text x="347" y="512" font-size="12" fill="#0b0b0b">dropped: redundant with a kept skill, or worth nothing</text>
+<text x="40" y="538" font-size="12" fill="#52514e">The four kept skills are not the four largest. Three of the largest sit in one pillar and substitute for each other; keeping one of them loses nothing.</text>
+</svg>
