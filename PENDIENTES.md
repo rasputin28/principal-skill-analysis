@@ -1,5 +1,17 @@
 # PENDIENTES — PSA (Principal Skill Analysis)
 
+## [2026-09-08] Triage
+
+> Fuentes: omna-brain activo hoy — ninguna nota del día genera accionables para PSA. Inbox vacío. Sin tareas nuevas.
+>
+> Estado: las 3 tareas de código (piloto de banda, controles, corrida piloto) siguen bloqueadas por 6 decisiones pendientes de Joel (ver AVANCES.md §Decisiones pendientes). Sin autorización de gasto de API escrita en `CLAUDE.md`, el sistema NOCHE no puede ejecutar corridas reales.
+>
+> URGENTE antes de próxima noche: (1) autorizar gasto de API budget añadiendo línea en `CLAUDE.md`, (2) confirmar nombre PSA vs. PCS, (3) fijar modelo, semillas, k y repeticiones por celda en pre-registro.
+
+_(sin tareas nuevas — las tareas de ejecución existentes siguen pendientes de decisión humana)_
+
+---
+
 ## [2026-09-07] Triage
 
 > Fuentes: `inbox/sesion-2026-09-06-psa.md` (sesión de diseño 2026-09-06). Estado del repo: commit inicial `034f9f5` + docs, 40 tests pasando. `StubRunner` en su lugar; ninguna corrida real es posible hasta completar la tarea 1.

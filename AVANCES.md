@@ -1,68 +1,54 @@
-# AVANCES — PSA — noche 2026-09-07
+# AVANCES — PSA — noche 2026-09-08
 
 ## Hecho
 
-### [codigo] ClaudeCodeRunner implementado
-- **Branch:** `noche/2026-09-07-runner` (commit c736956)
-- **Archivo:** `psa/runner/claude_code.py`
-- **Tests:** 18 nuevos en `tests/test_runner.py` — todos verdes. Suite completa: 96 passed (0 failed).
-- Runner llama al CLI `claude` vía subprocess, pasa `CLAUDE_SKILLS_DIR=workspace`, parsea
-  `--output-format json` del transcript para extraer llamadas reales a `Skill` tool.
-- `HarnessUnsupported` se lanza (en lugar de datos silenciosamente incorrectos) cuando el
-  transcript no tiene clave `"messages"`, el binary no existe, timeout, o exit code ≠ 0.
-- `ClaudeCodeRunner` satisface el protocolo `Runner` (verificado en test).
-- `report.guard()` sigue bloqueando `StubRunner` — no se rompió el contrato existente.
+### Verificación de suite de tests
+- **Comando:** `.venv/bin/pip install -e . && .venv/bin/pytest --tb=no -q`
+- **Resultado:** 96 passed, 0 failed (idéntico a 2026-09-07)
+- **Hallazgo:** el paquete `psa` requiere `pip install -e .` para que pytest lo encuentre.
+  Sin ese paso, los 4 módulos de test fallan con `ModuleNotFoundError: No module named 'psa'`.
+  La suite no está rota — es un problema de entorno de ejecución, no de código.
 
-### [doc] Pre-registro piloto en borrador
-- **Branch:** `noche/2026-09-07-preregistration` (commit 5b66b49)
-- **Archivo:** `preregistration/run-0-pilot.md`
-- Llena todo lo derivable de la sesión 2026-09-06: catálogos, benchmark (SWE-bench Verified),
-  harness, desenlace primario (Shapley φᵢ), etapas del diseño, hipótesis H1–H5 con umbrales
-  numéricos, reglas de parada y reporte.
-- **No puede commitarse como pre-registro final** hasta que 4 campos queden fijos (ver sección
-  Decisiones pendientes).
-
-### Wiki inicializada
-- **Branch:** `noche/2026-09-07-preregistration` (commit eeae73e)
-- 6 páginas: INDEX, runner, design, catalogs, controls, preregistration, pendiente-nombre.
+### Wiki actualizada
+- `wiki/INDEX.md`: fecha actualizada a 2026-09-08, nota de instalación añadida.
 
 ---
 
 ## Atascado / Fallas
 
-### [codigo] Piloto de banda informativa — NO ejecutado
-- **Razón:** requiere corridas reales con la API de Claude (gasto de dinero). El CLAUDE.md del
-  proyecto no autoriza gasto de API budget por escrito. Constitución del sistema NOCHE: "gastar
-  dinero o contratar servicios" requiere autorización explícita.
-- **No es un error técnico** — el bloqueo es intencional y correcto.
+### Noche sin producción nueva
 
-### [codigo] Corrida de controles — NO ejecutada
-- **Razón:** misma que arriba. Los controles requieren corridas reales.
+Las 3 tareas de código siguen bloqueadas por las mismas razones que la noche anterior:
 
-### [codigo] Corrida piloto completa — NO ejecutada
-- **Razón:** bloqueada por las dos anteriores, además de la misma restricción de presupuesto.
+| tarea | bloqueante |
+|---|---|
+| Piloto de banda informativa | Sin autorización de gasto de API en `CLAUDE.md` |
+| Corrida de controles | Sin autorización de gasto de API en `CLAUDE.md` |
+| Corrida piloto completa | Bloqueada por las dos anteriores + misma restricción |
+
+No hubo contexto nuevo en inbox (vacío). No hubo notas ni grabaciones del día con accionables
+para PSA. La constitución del sistema NOCHE prohíbe gastar dinero sin autorización escrita;
+esa autorización no está en el `CLAUDE.md` del proyecto. El bloqueo es correcto.
 
 ---
 
 ## Decisiones pendientes (para Joel)
 
-1. **Autorizar gasto de API budget** para las corridas reales (piloto, controles, cribado).
-   Sin esta autorización escrita en `CLAUDE.md`, el sistema NOCHE no puede ejecutar las
-   tareas 3–5 de PENDIENTES.md. Añadir una línea como:
+Siguen abiertas las 6 de la noche anterior:
+
+1. **Autorizar gasto de API budget** — añadir a `CLAUDE.md` del proyecto:
    > `Autorizado: ClaudeCodeRunner puede gastar hasta [N] dólares en corridas PSA por noche.`
 
-2. **Banda informativa** — decidir umbrales inferior y superior de resolve-rate de la línea
-   base (e.g. 0.10–0.90). Llenar el campo en `preregistration/run-0-pilot.md` y recommitear.
+2. **Banda informativa** — umbrales inferior y superior de resolve-rate de la línea base
+   (sugerido: 0.10–0.90). Llenar en `preregistration/run-0-pilot.md` y recommitear.
 
-3. **Modelo** — especificar el identificador exacto del modelo (e.g. `claude-sonnet-5-20251001`).
+3. **Modelo** — identificador exacto (e.g. `claude-sonnet-5-20251001`).
 
-4. **Semillas** — lista fija de seeds (e.g. `[0, 1, 2]`). Fijar antes de la primera corrida.
+4. **Semillas** — lista fija (e.g. `[0, 1, 2]`).
 
-5. **k y repeticiones por celda** — k determina 2^k configuraciones en la etapa exacta;
-   repeticiones determina el presupuesto total. Ambos en `preregistration/run-0-pilot.md`.
+5. **k y repeticiones por celda** — k determina 2^k configuraciones en la etapa exacta.
 
 6. **Nombre PSA vs. PCS** — confirmar antes de cualquier referencia externa.
-   Ver `wiki/pendiente-nombre.md`.
 
 ---
 
@@ -72,7 +58,8 @@
 |---|---|---|
 | Runner real | `psa/runner/claude_code.py` | listo, 18 tests verdes |
 | Tests del runner | `tests/test_runner.py` | 18 passed |
+| Suite completa | `tests/` | 96 passed (verificado 2026-09-08) |
 | Pre-registro piloto | `preregistration/run-0-pilot.md` | borrador — 4 campos abiertos |
-| Wiki PSA | `wiki/` (6 páginas) | inicializada |
+| Wiki PSA | `wiki/` (6 páginas) | al día |
 | Branch runner | `noche/2026-09-07-runner` | commiteado |
 | Branch preregistration + wiki | `noche/2026-09-07-preregistration` | commiteado |

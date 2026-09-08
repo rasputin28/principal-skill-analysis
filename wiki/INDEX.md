@@ -4,8 +4,10 @@ Instrumento empírico para medir qué skills de un catálogo de agente (y qué c
 explican el rendimiento en un benchmark. El catálogo es un parámetro de entrada: se apunta a
 cualquier repo de skills, se fija por commit, se mide.
 
-**Estado (2026-09-07):** Pre-corrida. Runner real implementado. Pre-registro en borrador
+**Estado (2026-09-08):** Pre-corrida. Runner real implementado. Pre-registro en borrador
 (4 campos pendientes de decisión humana). Sin corridas reales ejecutadas aún.
+Suite de tests: 96 passed (verificado 2026-09-08). Requiere `pip install -e .` en el venv
+antes de la primera ejecución de tests en entorno limpio.
 
 **Nombre:** PSA = Principal Skill Analysis. [[pendiente-nombre]] — Joel escribió "PCS" en un
 mensaje; requiere confirmar PSA vs. PCS antes de cualquier referencia externa.
