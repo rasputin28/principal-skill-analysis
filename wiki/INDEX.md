@@ -4,10 +4,15 @@ Instrumento empírico para medir qué skills de un catálogo de agente (y qué c
 explican el rendimiento en un benchmark. El catálogo es un parámetro de entrada: se apunta a
 cualquier repo de skills, se fija por commit, se mide.
 
-**Estado (2026-09-08):** Pre-corrida. Runner real implementado. Pre-registro en borrador
+**Estado (2026-09-09):** Pre-corrida. Runner real implementado. Pre-registro en borrador
 (4 campos pendientes de decisión humana). Sin corridas reales ejecutadas aún.
-Suite de tests: 96 passed (verificado 2026-09-08). Requiere `pip install -e .` en el venv
+Suite de tests: 96 passed (verificado 2026-09-09). Requiere `pip install -e .` en el venv
 antes de la primera ejecución de tests en entorno limpio.
+
+**Bloqueo persistente (3ª noche):** Las 3 tareas de ejecución (piloto de banda, controles,
+corrida piloto) siguen sin poder correr. Causa: no hay autorización de gasto de API en
+`CLAUDE.md` del proyecto, ni están resueltos los 4 campos del pre-registro. Sin resolución
+humana de esas 6 decisiones, el sistema NOCHE no puede avanzar.
 
 **Nombre:** PSA = Principal Skill Analysis. [[pendiente-nombre]] — Joel escribió "PCS" en un
 mensaje; requiere confirmar PSA vs. PCS antes de cualquier referencia externa.

@@ -1,24 +1,22 @@
-# AVANCES — PSA — noche 2026-09-08
+# AVANCES — PSA — noche 2026-09-09
 
 ## Hecho
 
 ### Verificación de suite de tests
 - **Comando:** `.venv/bin/pip install -e . && .venv/bin/pytest --tb=no -q`
-- **Resultado:** 96 passed, 0 failed (idéntico a 2026-09-07)
-- **Hallazgo:** el paquete `psa` requiere `pip install -e .` para que pytest lo encuentre.
-  Sin ese paso, los 4 módulos de test fallan con `ModuleNotFoundError: No module named 'psa'`.
-  La suite no está rota — es un problema de entorno de ejecución, no de código.
+- **Resultado:** 96 passed, 0 failed (idéntico a 2026-09-07 y 2026-09-08)
+- La suite está intacta. Sin cambios de código esta noche.
 
 ### Wiki actualizada
-- `wiki/INDEX.md`: fecha actualizada a 2026-09-08, nota de instalación añadida.
+- `wiki/INDEX.md`: fecha actualizada a 2026-09-09, nota de bloqueo persistente (3ª noche) añadida.
 
 ---
 
 ## Atascado / Fallas
 
-### Noche sin producción nueva
+### Noche sin producción nueva (3ª consecutiva)
 
-Las 3 tareas de código siguen bloqueadas por las mismas razones que la noche anterior:
+Las 3 tareas de código siguen bloqueadas exactamente igual que las dos noches anteriores:
 
 | tarea | bloqueante |
 |---|---|
@@ -26,15 +24,14 @@ Las 3 tareas de código siguen bloqueadas por las mismas razones que la noche an
 | Corrida de controles | Sin autorización de gasto de API en `CLAUDE.md` |
 | Corrida piloto completa | Bloqueada por las dos anteriores + misma restricción |
 
-No hubo contexto nuevo en inbox (vacío). No hubo notas ni grabaciones del día con accionables
-para PSA. La constitución del sistema NOCHE prohíbe gastar dinero sin autorización escrita;
-esa autorización no está en el `CLAUDE.md` del proyecto. El bloqueo es correcto.
+Inbox vacío. Sin notas, grabaciones ni contexto activo nuevo del día para PSA.
+El bloqueo es correcto per constitución del sistema NOCHE.
 
 ---
 
-## Decisiones pendientes (para Joel)
+## Decisiones pendientes (para Joel) — urgente
 
-Siguen abiertas las 6 de la noche anterior:
+Llevan 3 noches sin resolverse. El sistema NOCHE no puede avanzar sin ellas.
 
 1. **Autorizar gasto de API budget** — añadir a `CLAUDE.md` del proyecto:
    > `Autorizado: ClaudeCodeRunner puede gastar hasta [N] dólares en corridas PSA por noche.`
@@ -57,9 +54,6 @@ Siguen abiertas las 6 de la noche anterior:
 | artefacto | ruta | estado |
 |---|---|---|
 | Runner real | `psa/runner/claude_code.py` | listo, 18 tests verdes |
-| Tests del runner | `tests/test_runner.py` | 18 passed |
-| Suite completa | `tests/` | 96 passed (verificado 2026-09-08) |
+| Suite completa | `tests/` | 96 passed (verificado 2026-09-09) |
 | Pre-registro piloto | `preregistration/run-0-pilot.md` | borrador — 4 campos abiertos |
-| Wiki PSA | `wiki/` (6 páginas) | al día |
-| Branch runner | `noche/2026-09-07-runner` | commiteado |
-| Branch preregistration + wiki | `noche/2026-09-07-preregistration` | commiteado |
+| Wiki PSA | `wiki/INDEX.md` | actualizada 2026-09-09 |

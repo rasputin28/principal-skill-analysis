@@ -1,5 +1,25 @@
 # PENDIENTES — PSA (Principal Skill Analysis)
 
+## [2026-09-10] Triage
+
+> Fuentes: inbox vacío. Sin contexto activo nuevo. Las 6 decisiones pendientes de Joel siguen
+> sin resolverse (3ª noche consecutiva). El sistema NOCHE no puede ejecutar corridas sin
+> autorización de gasto de API escrita en `CLAUDE.md`. Sin tareas nuevas.
+
+_(sin tareas nuevas)_
+
+---
+
+## [2026-09-09] Triage
+
+> Fuentes: inbox vacío. omna-brain MCP en timeout. MCP grabaciones no disponible. Sin contexto activo nuevo.
+>
+> Las 3 tareas de ejecución siguen bloqueadas por las 6 decisiones pendientes de Joel (API budget en CLAUDE.md, PSA vs PCS, modelo/semillas/k/repeticiones). Sin autorización escrita, el sistema NOCHE no puede ejecutar corridas. Sin tareas nuevas esta noche.
+
+_(sin tareas nuevas)_
+
+---
+
 ## [2026-09-08] Triage
 
 > Fuentes: omna-brain activo hoy — ninguna nota del día genera accionables para PSA. Inbox vacío. Sin tareas nuevas.
