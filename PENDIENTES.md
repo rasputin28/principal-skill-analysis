@@ -2,9 +2,15 @@
 
 ## [2026-09-10] Triage
 
-> Fuentes: inbox vacío. Sin contexto activo nuevo. Las 6 decisiones pendientes de Joel siguen
-> sin resolverse (3ª noche consecutiva). El sistema NOCHE no puede ejecutar corridas sin
-> autorización de gasto de API escrita en `CLAUDE.md`. Sin tareas nuevas.
+> Fuentes: inbox vacío. Sin contexto activo nuevo.
+>
+> Diagnóstico corregido esta noche: el bloqueo tiene DOS causas independientes, no una.
+> (1) El pre-registro tiene 4 campos `[PENDIENTE HUMANO]` sin llenar — ejecutar sin ellos
+> viola la integridad del estudio. (2) El entorno SWE-bench no está configurado en este equipo.
+> Incluso con autorización de API budget, los runs no son posibles sin resolver ambos.
+>
+> Las 6 decisiones de Joel siguen sin resolverse (4ª noche consecutiva).
+> Sin tareas nuevas — las tareas de ejecución existentes siguen pendientes.
 
 _(sin tareas nuevas)_
 
