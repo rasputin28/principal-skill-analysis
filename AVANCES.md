@@ -1,29 +1,28 @@
-# AVANCES — PSA — noche 2026-09-10
+# AVANCES — PSA — noche 2026-09-11
 
 ## Hecho
 
 ### Verificación de suite de tests
 - **Comando:** `.venv/bin/pytest --tb=no -q`
-- **Resultado:** 96 passed, 0 failed (idéntico a las 3 noches anteriores)
+- **Resultado:** 96 passed, 0 failed (5ª noche consecutiva idéntico)
 - Suite intacta. Sin cambios de código esta noche.
 
 ### Triage
-- Inbox: vacío (ningún archivo nuevo).
+- Inbox: vacío.
 - No hay contexto activo nuevo del día para PSA.
 - Sin nuevas tareas generadas.
 
 ### Wiki actualizada
-- `wiki/INDEX.md`: fecha actualizada a 2026-09-10; bloqueo corregido — ahora documenta las
-  DOS causas independientes (pre-registro incompleto + entorno SWE-bench no configurado),
-  no solo la de API budget. Esto es más preciso que las noches anteriores.
+- `wiki/INDEX.md`: fecha actualizada a 2026-09-11; bloqueo ascendido a 5ª noche consecutiva.
+  Sin conocimiento nuevo — el diagnóstico no cambió.
 
 ---
 
 ## Atascado / Fallas
 
-### Noche sin producción nueva (4ª consecutiva)
+### Noche sin producción nueva (5ª consecutiva)
 
-Las 3 tareas de código siguen bloqueadas. Diagnóstico más preciso que noches anteriores:
+Las 3 tareas de código siguen bloqueadas. Diagnóstico sin cambio:
 
 | tarea | bloqueante 1 | bloqueante 2 |
 |---|---|---|
@@ -31,39 +30,28 @@ Las 3 tareas de código siguen bloqueadas. Diagnóstico más preciso que noches 
 | Corrida de controles | Pre-registro: 2 campos sin llenar (model + seeds) | Entorno SWE-bench no configurado |
 | Corrida piloto completa | Bloqueada por las dos anteriores | — |
 
-**El bloqueo de API budget es SECUNDARIO.** Incluso con autorización de gasto, los runs no
-podrían ejecutarse porque:
-1. Ejecutar con campos `[PENDIENTE HUMANO]` en el pre-registro viola su propósito: los
-   parámetros se fijan ANTES de ver resultados. Correr sin ellos convierte el estudio en no
-   pre-registrado.
-2. `ClaudeCodeRunner` corre el CLI de Claude Code sobre tareas SWE-bench que requieren un
-   entorno de evaluación (docker/VM por tarea) que no está configurado en este equipo.
-
 ---
 
-## Decisiones pendientes (para Joel) — urgente
+## Decisiones pendientes (para Joel) — 5ª noche sin respuesta
 
-**4ª noche consecutiva. El sistema NOCHE no puede avanzar sin estas resoluciones.**
+Sin estas resoluciones el sistema NOCHE no puede avanzar:
 
 Las 4 del pre-registro (llenar en `preregistration/run-0-pilot.md` y recommitear):
 
 1. **Band thresholds** — umbrales inferior y superior del filtro de banda informativa.
-   Sugerido: 0.10 – 0.90. DEBE fijarse aquí antes del piloto.
+   Sugerido: 0.10 – 0.90. DEBE fijarse antes del piloto.
 
-2. **Modelo** — identificador exacto del modelo a usar, e.g. `claude-sonnet-5-20251001`.
+2. **Modelo** — identificador exacto, e.g. `claude-sonnet-5-20251001`.
 
-3. **Seeds** — lista fija de semillas, e.g. `[0, 1, 2]`. Fijadas aquí para que no puedan
-   elegirse después de ver resultados.
+3. **Seeds** — lista fija, e.g. `[0, 1, 2]`. Deben fijarse antes de ver resultados.
 
-4. **k y repeticiones por celda** — k determina 2^k configuraciones en la etapa exacta
-   (k=7 → 128, k=8 → 256). Repeticiones determinan el poder estadístico y el costo total.
+4. **k y repeticiones por celda** — k determina 2^k configuraciones (k=7 → 128, k=8 → 256).
 
-Más la infraestructura (no es decisión, es trabajo técnico que requiere humano):
+Más la infraestructura (trabajo técnico, requiere humano):
 
-5. **Entorno SWE-bench** — configurar el entorno de evaluación (docker/VM) para que
-   `ClaudeCodeRunner` pueda correr. Sin esto, ninguna corrida es posible.
+5. **Entorno SWE-bench** — configurar docker/VM para que `ClaudeCodeRunner` pueda correr.
 
-Y la de nombre:
+Y el nombre:
 
 6. **PSA vs. PCS** — confirmar antes de cualquier referencia externa. (Ver [[pendiente-nombre]])
 
@@ -74,6 +62,6 @@ Y la de nombre:
 | artefacto | ruta | estado |
 |---|---|---|
 | Runner real | `psa/runner/claude_code.py` | listo, 18 tests verdes |
-| Suite completa | `tests/` | 96 passed (verificado 2026-09-10) |
+| Suite completa | `tests/` | 96 passed (verificado 2026-09-11) |
 | Pre-registro piloto | `preregistration/run-0-pilot.md` | borrador — 4 campos abiertos |
-| Wiki PSA | `wiki/INDEX.md` | actualizada 2026-09-10 (bloqueo corregido) |
+| Wiki PSA | `wiki/INDEX.md` | actualizada 2026-09-11 |
