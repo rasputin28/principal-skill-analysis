@@ -1,5 +1,23 @@
 # PENDIENTES — PSA (Principal Skill Analysis)
 
+## [2026-09-17] Triage
+
+> Fuentes: inbox vacío. omna-brain: notas del día son de OMNA/Vero (persianas), sin contexto PSA. MCP grabaciones no disponible.
+> Las 3 tareas de ejecución siguen bloqueadas por las 6 decisiones pendientes de Joel (10ª noche consecutiva). Sin tareas nuevas.
+
+_(sin tareas nuevas)_
+
+---
+
+## [2026-09-16] Triage
+
+> Fuentes: inbox vacío. omna-brain: notas del día son de OMNA/Vero (persianas), sin contexto PSA. MCP grabaciones no disponible.
+> Las 3 tareas de ejecución (piloto de banda, controles, corrida piloto) siguen bloqueadas por las 6 decisiones pendientes de Joel (10ª noche consecutiva). Sin tareas nuevas.
+
+_(sin tareas nuevas)_
+
+---
+
 ## [2026-09-15] Triage
 
 > Fuentes: omna-brain activo (sin notas del día con contexto PSA). Inbox vacío. MCP grabaciones no disponible.
