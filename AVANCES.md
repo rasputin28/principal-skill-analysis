@@ -1,26 +1,26 @@
-# AVANCES — PSA — noche 2026-09-16
+# AVANCES — PSA — noche 2026-09-17
 
 ## Hecho
 
 ### Verificación de suite de tests
 - **Comando:** `.venv/bin/pytest --tb=no -q`
-- **Resultado:** 96 passed, 0 failed (10ª noche consecutiva idéntico)
+- **Resultado:** 96 passed, 0 failed (11ª noche consecutiva idéntico)
 - Suite intacta. Sin cambios de código esta noche.
 
 ### Triage
 - Inbox: vacío.
-- omna-brain: notas del día son de OMNA/Vero (persianas), sin contexto PSA.
+- omna-brain: notas del día sin contexto PSA.
 - Sin nuevas tareas generadas.
 
 ### Wiki actualizada
-- `wiki/INDEX.md`: fecha actualizada a 2026-09-16; bloqueo ascendido a 10ª noche consecutiva.
+- `wiki/INDEX.md`: fecha actualizada a 2026-09-17; bloqueo ascendido a 11ª noche consecutiva.
   Sin conocimiento nuevo — el diagnóstico no cambió.
 
 ---
 
 ## Atascado / Fallas
 
-### Noche sin producción nueva (10ª consecutiva)
+### Noche sin producción nueva (11ª consecutiva)
 
 Las 3 tareas de código siguen bloqueadas. Diagnóstico sin cambio:
 
@@ -32,7 +32,7 @@ Las 3 tareas de código siguen bloqueadas. Diagnóstico sin cambio:
 
 ---
 
-## Decisiones pendientes (para Joel) — 10ª noche sin respuesta
+## Decisiones pendientes (para Joel) — 11ª noche sin respuesta
 
 Sin estas resoluciones el sistema NOCHE no puede avanzar:
 
@@ -62,6 +62,6 @@ Y el nombre:
 | artefacto | ruta | estado |
 |---|---|---|
 | Runner real | `psa/runner/claude_code.py` | listo, 18 tests verdes |
-| Suite completa | `tests/` | 96 passed (verificado 2026-09-16) |
+| Suite completa | `tests/` | 96 passed (verificado 2026-09-17) |
 | Pre-registro piloto | `preregistration/run-0-pilot.md` | borrador — 4 campos abiertos |
-| Wiki PSA | `wiki/INDEX.md` | actualizada 2026-09-16 |
+| Wiki PSA | `wiki/INDEX.md` | actualizada 2026-09-17 |
