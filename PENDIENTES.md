@@ -1,5 +1,35 @@
 # PENDIENTES — PSA (Principal Skill Analysis)
 
+## [2026-10-04] Triage
+
+> Fuentes: inbox vacío. omna-brain: no consultado (patrón persistente de timeout). MCP grabaciones: no disponible. Sin sesiones diurnas en inbox.
+>
+> Las 3 tareas de ejecución (piloto de banda, controles, corrida piloto) siguen bloqueadas por las 6 decisiones pendientes de Joel (API budget en CLAUDE.md, nombre PSA vs PCS, modelo/semillas/k/repeticiones, 4 campos del pre-registro). **26ª noche consecutiva sin desbloqueo.** Sin tareas nuevas esta noche.
+
+_(sin tareas nuevas)_
+
+---
+
+## [2026-10-03] Triage
+
+> Fuentes: inbox vacío. omna-brain: notas del 2026-10-02 son de Industrias AS y personal (Raspberry Pi 5); sin contexto PSA. `get_note`: ECONNRESET/timeout. MCP grabaciones: no disponible.
+>
+> Las 3 tareas de ejecución (piloto de banda, controles, corrida piloto) siguen bloqueadas por las 6 decisiones pendientes de Joel (API budget en CLAUDE.md, nombre PSA vs PCS, modelo/semillas/k/repeticiones, 4 campos del pre-registro). **24ª noche consecutiva sin desbloqueo.** Sin tareas nuevas esta noche.
+
+_(sin tareas nuevas)_
+
+---
+
+## [2026-10-02] Triage
+
+> Fuentes: inbox vacío. omna-brain: activo pero ninguna nota del día/ayer tiene contexto PSA. MCP grabaciones: no disponible. Sin sesiones diurnas en inbox.
+>
+> Las 3 tareas de ejecución (piloto de banda, controles, corrida piloto) siguen bloqueadas por las 6 decisiones pendientes de Joel (API budget en CLAUDE.md, nombre PSA vs PCS, modelo/semillas/k/repeticiones, 4 campos del pre-registro). 23ª noche consecutiva sin desbloqueo. Sin tareas nuevas esta noche.
+
+_(sin tareas nuevas)_
+
+---
+
 ## [2026-10-01] Triage
 
 > Fuentes: inbox vacío. omna-brain: `list_notes` activo — 20 notas más recientes consultadas (oct 1 y sep 30); workspaces de clientes sin contexto PSA. MCP grabaciones: no disponible. Sin sesiones diurnas en inbox.
