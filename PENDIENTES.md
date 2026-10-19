@@ -1,5 +1,15 @@
 # PENDIENTES — PSA (Principal Skill Analysis)
 
+## [2026-10-19] Triage
+
+> Fuentes: inbox `sugiere-skills-2026-10-18.md` procesado (sin contexto PSA). omna-brain: timeout (no disponible). MCP grabaciones: no disponible. Sin sesiones diurnas en inbox.
+>
+> Las 3 tareas de ejecución (piloto de banda, controles, corrida piloto) siguen bloqueadas por las 6 decisiones pendientes de Joel (API budget en CLAUDE.md, nombre PSA vs PCS, modelo/semillas/k/repeticiones, 4 campos del pre-registro). **33ª noche consecutiva sin desbloqueo.** Sin tareas nuevas esta noche.
+
+_(sin tareas nuevas)_
+
+---
+
 ## [2026-10-18] Triage
 
 > Fuentes: inbox vacío. omna-brain: activo — ninguna nota del período 2026-10-17–18 contiene contexto PSA. MCP grabaciones: no disponible. Sin sesiones diurnas en inbox.
