@@ -1,9 +1,9 @@
-# AVANCES — PSA — noche 2026-10-20
+# AVANCES — PSA — noche 2026-10-21
 
 ## Hecho
 
 ### Wiki actualizada
-- `wiki/INDEX.md`: fecha actualizada a 2026-10-20; bloqueo a 35ª noche consecutiva sin desbloqueo.
+- `wiki/INDEX.md`: fecha actualizada a 2026-10-21; bloqueo en 35ª noche consecutiva sin desbloqueo.
   Sin conocimiento nuevo — el diagnóstico no cambió.
 
 ---
@@ -54,4 +54,4 @@ Y el nombre:
 | Runner real | `psa/runner/claude_code.py` | listo, 18 tests verdes |
 | Suite completa | `tests/` | 96 passed (verificado 2026-09-29) |
 | Pre-registro piloto | `preregistration/run-0-pilot.md` | borrador — 4 campos abiertos |
-| Wiki PSA | `wiki/INDEX.md` | actualizada 2026-10-20 |
+| Wiki PSA | `wiki/INDEX.md` | actualizada 2026-10-21 |
