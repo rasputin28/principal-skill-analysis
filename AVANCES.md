@@ -1,16 +1,16 @@
-# AVANCES — PSA — noche 2026-10-22
+# AVANCES — PSA — noche 2026-10-23
 
 ## Hecho
 
 ### Wiki actualizada
-- `wiki/INDEX.md`: fecha actualizada a 2026-10-22; bloqueo en 36ª noche consecutiva sin desbloqueo.
+- `wiki/INDEX.md`: fecha actualizada a 2026-10-23; bloqueo en 37ª noche consecutiva sin desbloqueo.
   Sin conocimiento nuevo — el diagnóstico no cambió.
 
 ---
 
 ## Atascado / Fallas
 
-### Noche sin producción nueva (36ª consecutiva sin desbloqueo)
+### Noche sin producción nueva (37ª consecutiva sin desbloqueo)
 
 Las 3 tareas de código siguen bloqueadas. Diagnóstico sin cambio:
 
@@ -22,7 +22,7 @@ Las 3 tareas de código siguen bloqueadas. Diagnóstico sin cambio:
 
 ---
 
-## Decisiones pendientes (para Joel) — 36ª noche sin respuesta
+## Decisiones pendientes (para Joel) — 37ª noche sin respuesta
 
 Sin estas resoluciones el sistema NOCHE no puede avanzar:
 
@@ -54,4 +54,4 @@ Y el nombre:
 | Runner real | `psa/runner/claude_code.py` | listo, 18 tests verdes |
 | Suite completa | `tests/` | 96 passed (verificado 2026-09-29) |
 | Pre-registro piloto | `preregistration/run-0-pilot.md` | borrador — 4 campos abiertos |
-| Wiki PSA | `wiki/INDEX.md` | actualizada 2026-10-22 |
+| Wiki PSA | `wiki/INDEX.md` | actualizada 2026-10-23 |
