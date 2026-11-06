@@ -1,5 +1,25 @@
 # PENDIENTES — PSA (Principal Skill Analysis)
 
+## [2026-11-06] Triage
+
+> Fuentes: inbox no consultado (sesión de ejecución). omna-brain: AUTH_HEADER_REJECTED (no disponible). MCP grabaciones: no disponible. Sin sesiones diurnas en inbox.
+>
+> Las 3 tareas de ejecución (piloto de banda, controles, corrida piloto) siguen bloqueadas por las 6 decisiones pendientes de Joel (API budget en CLAUDE.md, nombre PSA vs PCS, modelo/semillas/k/repeticiones, 4 campos del pre-registro). **49ª noche consecutiva sin desbloqueo.** Sin tareas nuevas esta noche.
+
+_(sin tareas nuevas)_
+
+---
+
+## [2026-11-03] Triage
+
+> Fuentes: inbox vacío. omna-brain: disponible — notas del 2026-11-02 son invitaciones de calendario y documentos técnicos Sajitex; sin contexto PSA. MCP grabaciones: no disponible. Sin sesiones diurnas en inbox.
+>
+> Las 3 tareas de ejecución (piloto de banda, controles, corrida piloto) siguen bloqueadas por las 6 decisiones pendientes de Joel (API budget en CLAUDE.md, nombre PSA vs PCS, modelo/semillas/k/repeticiones, 4 campos del pre-registro). **48ª noche consecutiva sin desbloqueo.** Sin tareas nuevas esta noche.
+
+_(sin tareas nuevas)_
+
+---
+
 ## [2026-11-02] Triage
 
 > Fuentes: inbox procesado — sin contexto PSA. omna-brain: no consultado (sin tareas nuevas que requieran búsqueda). MCP grabaciones: no disponible.
