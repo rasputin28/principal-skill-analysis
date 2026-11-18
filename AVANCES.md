@@ -1,16 +1,16 @@
-# AVANCES — PSA — noche 2026-11-17
+# AVANCES — PSA — noche 2026-11-18
 
 ## Hecho
 
 ### Wiki y PENDIENTES actualizados
-- `PENDIENTES.md`: entrada de triage 2026-11-17 añadida; contador a 60ª noche.
-- `wiki/INDEX.md`: fecha y contador de bloqueo actualizados a 2026-11-17 / 60ª noche.
+- `PENDIENTES.md`: entrada de triage 2026-11-18 añadida; contador a 61ª noche.
+- `wiki/INDEX.md`: fecha y contador de bloqueo actualizados a 2026-11-18 / 61ª noche.
 
 ---
 
 ## Atascado / Fallas
 
-### Noche sin producción nueva (60ª consecutiva sin desbloqueo)
+### Noche sin producción nueva (61ª consecutiva sin desbloqueo)
 
 Las 3 tareas de código siguen bloqueadas. Diagnóstico sin cambio:
 
@@ -24,7 +24,7 @@ omna-brain no disponible esta noche (AUTH_HEADER_REJECTED).
 
 ---
 
-## Decisiones pendientes (para Joel) — 60ª noche sin respuesta
+## Decisiones pendientes (para Joel) — 61ª noche sin respuesta
 
 Sin estas resoluciones el sistema NOCHE no puede avanzar:
 
@@ -56,4 +56,4 @@ Y el nombre:
 | Runner real | `psa/runner/claude_code.py` | listo, 18 tests verdes |
 | Suite completa | `tests/` | 96 passed (verificado 2026-09-29) |
 | Pre-registro piloto | `preregistration/run-0-pilot.md` | borrador — 4 campos abiertos |
-| Wiki PSA | `wiki/INDEX.md` | actualizada 2026-11-17 |
+| Wiki PSA | `wiki/INDEX.md` | actualizada 2026-11-18 |
