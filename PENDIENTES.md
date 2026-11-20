@@ -1,10 +1,30 @@
 # PENDIENTES — PSA (Principal Skill Analysis)
 
-## [2026-11-15] Triage
+## [2026-11-19] Triage
+
+> Fuentes: inbox vacío. omna-brain: AUTH_HEADER_REJECTED (13ª noche consecutiva sin acceso). MCP grabaciones: no disponible. Meetings MCP: sin permisos de proyecto. Sin sesiones diurnas en inbox.
+>
+> Las 3 tareas de ejecución (piloto de banda, controles, corrida piloto) siguen bloqueadas por las 6 decisiones pendientes de Joel (API budget en CLAUDE.md, nombre PSA vs PCS, modelo/semillas/k/repeticiones, 4 campos del pre-registro). **61ª noche consecutiva sin desbloqueo.** Sin tareas nuevas esta noche.
+
+_(sin tareas nuevas)_
+
+---
+
+## [2026-11-16] Triage
 
 > Fuentes: inbox vacío. omna-brain: AUTH_HEADER_REJECTED (11ª noche consecutiva sin acceso). MCP grabaciones: no disponible. Meetings MCP: sin permisos de proyecto. Sin sesiones diurnas en inbox.
 >
-> Las 3 tareas de ejecución (piloto de banda, controles, corrida piloto) siguen bloqueadas por las 6 decisiones pendientes de Joel (API budget en CLAUDE.md, nombre PSA vs PCS, modelo/semillas/k/repeticiones, 4 campos del pre-registro). **58ª noche consecutiva sin desbloqueo.** Sin tareas nuevas esta noche. Wiki y AVANCES.md actualizados.
+> Las 3 tareas de ejecución (piloto de banda, controles, corrida piloto) siguen bloqueadas por las 6 decisiones pendientes de Joel (API budget en CLAUDE.md, nombre PSA vs PCS, modelo/semillas/k/repeticiones, 4 campos del pre-registro). **58ª noche consecutiva sin desbloqueo.** Sin tareas nuevas esta noche.
+
+_(sin tareas nuevas)_
+
+---
+
+## [2026-11-15] Triage
+
+> Fuentes: inbox vacío. omna-brain: AUTH_HEADER_REJECTED (10ª noche consecutiva sin acceso). MCP grabaciones: no disponible. Meetings MCP: sin permisos de proyecto. Sin sesiones diurnas en inbox.
+>
+> Las 3 tareas de ejecución (piloto de banda, controles, corrida piloto) siguen bloqueadas por las 6 decisiones pendientes de Joel (API budget en CLAUDE.md, nombre PSA vs PCS, modelo/semillas/k/repeticiones, 4 campos del pre-registro). **57ª noche consecutiva sin desbloqueo.** Sin tareas nuevas esta noche.
 
 _(sin tareas nuevas)_
 
